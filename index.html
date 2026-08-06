@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cronograma — Painel da Equipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430;
+    --ink-2:#252F3F;
+    --paper:#F7F5F0;
+    --paper-2:#EFEBE1;
+    --amber:#E8A33D;
+    --amber-dark:#C4832A;
+    --teal:#3E7C82;
+    --teal-dark:#2E5F64;
+    --rose:#C1666B;
+    --rose-dark:#A54F54;
+    --green:#4C8A62;
+    --green-dark:#3A6B4C;
+    --slate:#5C6570;
+    --line:#DBD5C6;
+    --white:#FFFFFF;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk',sans-serif;
+    margin:0;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  .ticker{
+    height:14px;
+    background:repeating-linear-gradient(90deg,var(--ink) 0 2px, transparent 2px 10px);
+    opacity:.5;
+  }
+
+  .topbar{
+    background:var(--ink);
+    color:var(--paper);
+    padding:22px clamp(16px,4vw,48px);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .idx{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--amber);
+    border:1px solid var(--amber);
+    border-radius:4px;
+    padding:2px 6px;
+  }
+  .brand h1{font-size:22px;letter-spacing:-.01em;}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:#B9C0CC;}
+  .role-pill{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    background:var(--ink-2);
+    border:1px solid #3A4658;
+    color:var(--paper);
+    padding:6px 12px;
+    border-radius:999px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .role-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);}
+  .role-pill button{
+    background:none;border:none;color:#B9C0CC;font-size:12px;text-decoration:underline;
+    padding:0;margin-left:6px;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,48px);}
+
+  .gate{
+    min-height:70vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 16px;
+  }
+  .gate-card{max-width:640px;text-align:center;}
+  .gate-card .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;letter-spacing:.15em;color:var(--teal-dark);text-transform:uppercase;
+  }
+  .gate-card h2{font-size:clamp(28px,4vw,38px);margin:10px 0 12px;}
+  .gate-card p{color:var(--slate);font-size:15px;line-height:1.6;margin:0 0 30px;}
+  .gate-options{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+  .gate-btn{
+    width:260px;text-align:left;background:var(--white);
+    border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    box-shadow:0 1px 0 rgba(27,36,48,.03);
+  }
+  .gate-btn:hover{transform:translateY(-3px);border-color:var(--ink);box-shadow:0 10px 24px rgba(27,36,48,.08);}
+  .gate-btn .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+    color:var(--amber-dark);text-transform:uppercase;
+  }
+  .gate-btn h3{font-size:19px;margin:8px 0 6px;}
+  .gate-btn span{font-size:13.5px;color:var(--slate);}
+
+  .layout{
+    display:grid;grid-template-columns:340px 1fr;gap:24px;
+    padding:28px clamp(16px,4vw,48px) 60px;max-width:1180px;margin:0 auto;
+  }
+  @media (max-width: 880px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+  }
+  .panel + .panel{margin-top:20px;}
+  .panel h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .panel h3 .num{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--white);
+    background:var(--teal);border-radius:5px;padding:2px 7px;
+  }
+
+  label{display:block;font-size:12.5px;font-weight:600;margin:14px 0 6px;color:var(--ink-2);}
+  label:first-of-type{margin-top:0;}
+  input[type=text],input[type=email],input[type=password],input[type=date],input[type=time],select,textarea{
+    width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:7px;
+    background:var(--paper);font-size:13.5px;color:var(--ink);outline:none;
+  }
+  input:focus,select:focus,textarea:focus{
+    border-color:var(--teal);box-shadow:0 0 0 3px rgba(62,124,130,.15);
+  }
+  textarea{resize:vertical;min-height:64px;}
+  .hint{font-size:11.5px;color:var(--slate);margin-top:5px;}
+  .err{font-size:11.5px;color:var(--rose-dark);margin-top:5px;display:none;}
+  .ok-msg{font-size:11.5px;color:var(--green-dark);margin-top:5px;}
+  .radio-row{display:flex;gap:16px;margin-top:6px;}
+  .radio-row label{display:flex;align-items:center;gap:6px;font-weight:500;font-size:13px;margin:0;color:var(--ink);}
+  .radio-row input{width:auto;}
+
+  .btn{border:none;border-radius:7px;padding:11px 16px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;}
+  .btn-primary{background:var(--ink);color:var(--paper);width:100%;justify-content:center;margin-top:16px;}
+  .btn-primary:hover{background:var(--ink-2);}
+  .btn-amber{background:var(--amber);color:var(--ink);}
+  .btn-amber:hover{background:var(--amber-dark);color:var(--white);}
+  .btn-teal{background:var(--teal);color:var(--white);}
+  .btn-teal:hover{background:var(--teal-dark);}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--ink);}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+  .btn:disabled{opacity:.5;cursor:default;}
+
+  .emp-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;gap:10px;
+  }
+  .emp-item:last-child{border-bottom:none;}
+  .emp-item .who b{display:block;font-size:13.5px;}
+  .emp-item .who span{color:var(--slate);font-size:12px;}
+  .del-btn{background:none;border:none;color:var(--rose-dark);font-size:11.5px;text-decoration:underline;padding:0;white-space:nowrap;}
+  .empty{color:var(--slate);font-size:13px;text-align:center;padding:18px 0;}
+
+  .badge{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;
+    padding:3px 8px;border-radius:999px;white-space:nowrap;
+  }
+  .badge-approved{background:#E4EFE8;color:var(--green-dark);}
+  .badge-pending{background:#FBEFDC;color:var(--amber-dark);}
+
+  .company-card{
+    border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .company-card .info b{display:block;font-size:14px;}
+  .company-card .info span{font-size:12px;color:var(--slate);}
+
+  .tab-row{display:flex;gap:8px;margin-bottom:18px;}
+  .tab-row .btn{flex:1;margin-top:0;}
+
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .cal-head h3{font-size:18px;}
+  .cal-nav{display:flex;gap:6px;}
+  .cal-nav button{background:var(--paper-2);border:1px solid var(--line);border-radius:6px;width:30px;height:30px;font-size:14px;color:var(--ink);}
+  .cal-nav button:hover{background:var(--line);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-dow{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--slate);
+    text-align:center;text-transform:uppercase;letter-spacing:.05em;padding-bottom:4px;
+  }
+  .cal-day{
+    aspect-ratio:1/0.85;border:1px solid var(--line);border-radius:8px;padding:6px 6px 4px;
+    background:var(--paper);cursor:pointer;display:flex;flex-direction:column;position:relative;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .cal-day.muted{opacity:.35;pointer-events:none;}
+  .cal-day:hover{border-color:var(--teal);}
+  .cal-day.selected{border-color:var(--ink);background:var(--paper-2);}
+  .cal-day.today .num{color:var(--teal-dark);}
+  .cal-day .num{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
+  .cal-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:auto;}
+  .cal-dot{width:6px;height:6px;border-radius:50%;}
+  .dot-all{background:var(--amber);}
+  .dot-one{background:var(--rose);}
+
+  .legend{display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--slate);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend .cal-dot{width:7px;height:7px;}
+
+  .agenda-title{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.08em;
+    color:var(--slate);text-transform:uppercase;margin:22px 0 10px;
+  }
+  .event-card{
+    border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:8px;
+    padding:12px 14px;margin-bottom:10px;background:var(--paper);
+  }
+  .event-card.individual{border-left-color:var(--rose);}
+  .event-card .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .event-card h4{font-size:14px;margin-bottom:3px;}
+  .event-card .time{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--teal-dark);white-space:nowrap;}
+  .event-card p{font-size:13px;color:var(--slate);margin:6px 0 0;line-height:1.5;}
+  .event-card .target{
+    display:inline-block;margin-top:8px;font-size:11px;font-family:'IBM Plex Mono',monospace;
+    padding:2px 8px;border-radius:999px;background:var(--paper-2);color:var(--ink-2);
+  }
+  .event-card .rm{background:none;border:none;color:var(--rose-dark);font-size:11px;text-decoration:underline;margin-top:8px;}
+
+  .login-box{max-width:460px;margin:60px auto;}
+  .login-box.wide{max-width:520px;}
+
+  .company-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .company-tabs button{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 13px;font-size:12.5px;color:var(--ink);
+  }
+  .company-tabs button.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+  ::selection{background:var(--amber);color:var(--ink);}
+</style>
+</head>
+<body>
+
+<div class="ticker"></div>
+<div class="topbar">
+  <div class="brand">
+    <span class="idx">CR—01</span>
+    <div>
+      <h1>Cronograma</h1>
+      <p>Painel de marcações da equipe</p>
+    </div>
+  </div>
+  <div id="roleIndicator"></div>
+</div>
+
+<div id="app" class="wrap"></div>
+
+<script>
+/* =========================================================
+   ESTADO (em memória — sem persistência entre recarregamentos)
+   ========================================================= */
+const SC_CITIES = [
+  "Araranguá","Balneário Camboriú","Biguaçu","Blumenau","Brusque","Caçador",
+  "Camboriú","Canoinhas","Chapecó","Concórdia","Criciúma","Florianópolis",
+  "Gaspar","Indaial","Itajaí","Itapema","Jaraguá do Sul","Joinville","Lages",
+  "Mafra","Navegantes","Palhoça","Rio do Sul","São Bento do Sul",
+  "São Francisco do Sul","São José","Tijucas","Timbó","Tubarão","Videira",
+  "Xanxerê"
+];
+
+const state = {
+  role: null,              // 'admin' | 'funcionario'
+  session: null,            // {type:'admin', adminId} | {type:'funcionario', employeeId}
+
+  admins: [],                // {id, email, nomeAdmin, nomeEmpresa, senha}
+  employees: [],              // {id, nome, cpf, cidade}
+  memberships: [],             // {id, employeeId, companyId, status:'pending'|'approved'}
+  events: [],                   // {id, companyId, titulo, data, hora, descricao, destino:'todos'|employeeId}
+
+  adminAuthTab: "login",         // 'login' | 'register'
+  employeeAuthTab: "login",       // 'login' | 'register'
+  companySearch: "",
+  employeeActiveCompanyId: null,
+
+  calDate: new Date(),
+  selectedDay: null,
+};
+
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+function maskCPF(value){
+  let v = value.replace(/\D/g,"").slice(0,11);
+  v = v.replace(/(\d{3})(\d)/,"$1.$2");
+  v = v.replace(/(\d{3})(\d)/,"$1.$2");
+  v = v.replace(/(\d{3})(\d{1,2})$/,"$1-$2");
+  return v;
+}
+function isPlausibleCPF(raw){
+  const cpf = raw.replace(/\D/g,"");
+  return cpf.length === 11 && !/^(\d)\1{10}$/.test(cpf);
+}
+function isValidGmail(email){
+  return /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email.trim());
+}
+
+function fmtDateKey(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function fmtDatePretty(key){
+  const [y,m,d] = key.split("-");
+  return `${d}/${m}/${y}`;
+}
+const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DOW_PT = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+function eventsForDay(list, key){
+  return list.filter(e => e.data === key).sort((a,b)=> a.hora.localeCompare(b.hora));
+}
+
+/* --- helpers de domínio --- */
+function currentAdmin(){
+  return state.admins.find(a => a.id === state.session?.adminId) || null;
+}
+function currentEmployee(){
+  return state.employees.find(e => e.id === state.session?.employeeId) || null;
+}
+function membershipOf(employeeId, companyId){
+  return state.memberships.find(m => m.employeeId===employeeId && m.companyId===companyId) || null;
+}
+function approvedEmployeesOf(companyId){
+  return state.memberships
+    .filter(m => m.companyId===companyId && m.status==="approved")
+    .map(m => state.employees.find(e=>e.id===m.employeeId))
+    .filter(Boolean);
+}
+function pendingRequestsOf(companyId){
+  return state.memberships.filter(m => m.companyId===companyId && m.status==="pending");
+}
+function approvedCompaniesOf(employeeId){
+  return state.memberships
+    .filter(m => m.employeeId===employeeId && m.status==="approved")
+    .map(m => state.admins.find(a=>a.id===m.companyId))
+    .filter(Boolean);
+}
+function eventsVisibleToEmployeeInCompany(employeeId, companyId){
+  return state.events.filter(e =>
+    e.companyId===companyId && (e.destino==="todos" || e.destino===employeeId)
+  );
+}
+
+/* =========================================================
+   RENDER RAIZ
+   ========================================================= */
+function render(){
+  const app = document.getElementById("app");
+  const roleBox = document.getElementById("roleIndicator");
+
+  if(!state.role){
+    roleBox.innerHTML = "";
+    app.innerHTML = renderGate();
+    return;
+  }
+
+  if(state.role === "admin" && !state.session){
+    roleBox.innerHTML = rolePillHTML("Administrador");
+    app.innerHTML = renderAdminAuthGate();
+    bindAdminAuthEvents();
+    return;
+  }
+  if(state.role === "admin" && state.session){
+    const adm = currentAdmin();
+    roleBox.innerHTML = rolePillHTML(adm.nomeEmpresa);
+    app.innerHTML = renderAdminDashboard(adm);
+    bindAdminDashboardEvents(adm);
+    return;
+  }
+
+  if(state.role === "funcionario" && !state.session){
+    roleBox.innerHTML = rolePillHTML("Funcionário");
+    app.innerHTML = renderEmployeeAuthGate();
+    bindEmployeeAuthEvents();
+    return;
+  }
+  if(state.role === "funcionario" && state.session){
+    const emp = currentEmployee();
+    roleBox.innerHTML = rolePillHTML("Funcionário — " + emp.nome.split(" ")[0]);
+    app.innerHTML = renderEmployeeDashboard(emp);
+    bindEmployeeDashboardEvents(emp);
+    return;
+  }
+}
+
+function rolePillHTML(label){
+  return `<div class="role-pill"><span class="dot"></span>${label}
+    <button id="switchRoleBtn">sair</button></div>`;
+}
+document.addEventListener("click", (e)=>{
+  if(e.target && e.target.id === "switchRoleBtn"){
+    state.role = null;
+    state.session = null;
+    state.selectedDay = null;
+    state.companySearch = "";
+    state.employeeActiveCompanyId = null;
+    state.adminAuthTab = "login";
+    state.employeeAuthTab = "login";
+    render();
+  }
+});
+
+/* =========================================================
+   TELA: SELEÇÃO DE PERFIL
+   ========================================================= */
+function renderGate(){
+  return `
+  <div class="gate">
+    <div class="gate-card">
+      <div class="eyebrow">Acesso ao painel</div>
+      <h2>Quem está entrando hoje?</h2>
+      <p>Administradores criam a conta da empresa e aprovam quem entra no grupo. Funcionários se cadastram, escolhem a empresa e aguardam liberação.</p>
+      <div class="gate-options">
+        <button class="gate-btn" id="pickAdmin">
+          <div class="tag">Chefia</div>
+          <h3>Sou Administrador</h3>
+          <span>Criar a conta da minha empresa e gerenciar o cronograma.</span>
+        </button>
+        <button class="gate-btn" id="pickEmployee">
+          <div class="tag">Equipe</div>
+          <h3>Sou Funcionário</h3>
+          <span>Me cadastrar, solicitar entrada em uma empresa e ver minha agenda.</span>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+document.addEventListener("click",(e)=>{
+  if(e.target.closest("#pickAdmin")){ state.role="admin"; state.adminAuthTab="login"; render(); }
+  if(e.target.closest("#pickEmployee")){ state.role="funcionario"; state.employeeAuthTab="login"; render(); }
+});
+
+/* =========================================================
+   TELA: AUTENTICAÇÃO DO ADMINISTRADOR (login + cadastro de empresa)
+   ========================================================= */
+function renderAdminAuthGate(){
+  const tab = state.adminAuthTab;
+  return `
+  <div class="login-box wide">
+    <div class="panel">
+      <div class="tab-row">
+        <button class="btn ${tab==='login'?'btn-primary':'btn-ghost'}" data-adm-tab="login">Entrar</button>
+        <button class="btn ${tab==='register'?'btn-primary':'btn-ghost'}" data-adm-tab="register">Criar conta da empresa</button>
+      </div>
+      ${tab==="login" ? renderAdminLoginForm() : renderAdminRegisterForm()}
+    </div>
+  </div>`;
+}
+function renderAdminLoginForm(){
+  return `
+    <h3><span class="num">01</span>Entrar como administrador</h3>
+    <label>E-mail (Gmail)</label>
+    <input type="email" id="admLoginEmail" placeholder="voce@gmail.com">
+    <label>Senha</label>
+    <input type="password" id="admLoginSenha" placeholder="••••••••">
+    <div class="err" id="admLoginErr">E-mail ou senha incorretos.</div>
+    <button class="btn btn-primary" id="admLoginBtn">Entrar</button>
+  `;
+}
+function renderAdminRegisterForm(){
+  return `
+    <h3><span class="num">01</span>Criar conta da empresa</h3>
+    <label>E-mail (Gmail)</label>
+    <input type="email" id="admRegEmail" placeholder="voce@gmail.com">
+    <label>Nome do administrador</label>
+    <input type="text" id="admRegNome" placeholder="Ex: Carlos Henrique Lima">
+    <label>Nome da empresa</label>
+    <input type="text" id="admRegEmpresa" placeholder="Ex: Comércio Lima Ltda">
+    <label>Senha</label>
+    <input type="password" id="admRegSenha" placeholder="Mínimo 6 caracteres">
+    <label>Confirmar senha</label>
+    <input type="password" id="admRegSenha2" placeholder="Repita a senha">
+    <div class="err" id="admRegErr">Confira os campos: e-mail Gmail válido, nome, empresa e senha (mín. 6 caracteres, iguais).</div>
+    <button class="btn btn-primary" id="admRegBtn">Criar conta e entrar</button>
+  `;
+}
+function bindAdminAuthEvents(){
+  document.querySelectorAll("[data-adm-tab]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ state.adminAuthTab = btn.getAttribute("data-adm-tab"); render(); });
+  });
+
+  const loginBtn = document.getElementById("admLoginBtn");
+  if(loginBtn){
+    loginBtn.addEventListener("click", ()=>{
+      const email = document.getElementById("admLoginEmail").value.trim().toLowerCase();
+      const senha = document.getElementById("admLoginSenha").value;
+      const errBox = document.getElementById("admLoginErr");
+      const adm = state.admins.find(a => a.email.toLowerCase()===email && a.senha===senha);
+      if(adm){
+        state.session = { type:"admin", adminId: adm.id };
+        render();
+      } else {
+        errBox.style.display = "block";
+      }
+    });
+  }
+
+  const regBtn = document.getElementById("admRegBtn");
+  if(regBtn){
+    regBtn.addEventListener("click", ()=>{
+      const email = document.getElementById("admRegEmail").value.trim();
+      const nomeAdmin = document.getElementById("admRegNome").value.trim();
+      const nomeEmpresa = document.getElementById("admRegEmpresa").value.trim();
+      const senha = document.getElementById("admRegSenha").value;
+      const senha2 = document.getElementById("admRegSenha2").value;
+      const errBox = document.getElementById("admRegErr");
+
+      let msg = "";
+      if(!isValidGmail(email)) msg = "Informe um e-mail Gmail válido (ex: voce@gmail.com).";
+      else if(state.admins.some(a=>a.email.toLowerCase()===email.toLowerCase())) msg = "Já existe uma conta com esse e-mail. Use a aba \"Entrar\".";
+      else if(!nomeAdmin) msg = "Informe o nome do administrador.";
+      else if(!nomeEmpresa) msg = "Informe o nome da empresa.";
+      else if(senha.length < 6) msg = "A senha precisa ter pelo menos 6 caracteres.";
+      else if(senha !== senha2) msg = "As senhas não são iguais.";
+
+      if(msg){
+        errBox.textContent = msg;
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+      const novoAdmin = { id: uid(), email, nomeAdmin, nomeEmpresa, senha };
+      state.admins.push(novoAdmin);
+      state.session = { type:"admin", adminId: novoAdmin.id };
+      render();
+    });
+  }
+}
+
+/* =========================================================
+   TELA: PAINEL DO ADMINISTRADOR
+   ========================================================= */
+function renderAdminDashboard(adm){
+  const pending = pendingRequestsOf(adm.id);
+  const approved = approvedEmployeesOf(adm.id);
+  const companyEvents = state.events.filter(e=>e.companyId===adm.id);
+
+  return `
+  <div class="layout">
+    <div>
+      <div class="panel">
+        <h3><span class="num">01</span>Solicitações pendentes <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${pending.length}</span></h3>
+        <div id="pendingList">
+          ${pending.length===0 ? '<div class="empty">Nenhuma solicitação no momento.</div>' :
+            pending.map(m=>{
+              const emp = state.employees.find(e=>e.id===m.employeeId);
+              return `
+                <div class="emp-item">
+                  <div class="who">
+                    <b>${emp.nome}</b>
+                    <span>${emp.cidade} · <span class="mono">${emp.cpf}</span></span>
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-teal btn-sm" data-approve="${m.id}">Aprovar</button>
+                    <button class="del-btn" data-reject="${m.id}">recusar</button>
+                  </div>
+                </div>`;
+            }).join("")
+          }
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3><span class="num">02</span>Equipe aprovada <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${approved.length}</span></h3>
+        <div id="approvedList">
+          ${approved.length===0 ? '<div class="empty">Ninguém aprovado ainda.</div>' :
+            approved.map(emp=>`
+              <div class="emp-item">
+                <div class="who">
+                  <b>${emp.nome}</b>
+                  <span>${emp.cidade} · <span class="mono">${emp.cpf}</span></span>
+                </div>
+                <button class="del-btn" data-revoke="${emp.id}">remover</button>
+              </div>
+            `).join("")
+          }
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3><span class="num">03</span>Nova marcação no cronograma</h3>
+        <label>Título do evento</label>
+        <input type="text" id="evTitulo" placeholder="Ex: Reunião de alinhamento">
+        <div style="display:flex; gap:12px;">
+          <div style="flex:1;">
+            <label>Data</label>
+            <input type="date" id="evData">
+          </div>
+          <div style="flex:1;">
+            <label>Horário</label>
+            <input type="time" id="evHora">
+          </div>
+        </div>
+        <label>Descrição</label>
+        <textarea id="evDesc" placeholder="Detalhes do evento (opcional)"></textarea>
+
+        <label>Destinatário</label>
+        <div class="radio-row">
+          <label><input type="radio" name="destino" value="todos" checked> Todo o grupo</label>
+          <label><input type="radio" name="destino" value="individual"> Funcionário específico</label>
+        </div>
+
+        <div id="individualBlock" style="display:none;">
+          <label>Nome completo do funcionário</label>
+          <select id="evEmpSelect">
+            <option value="" disabled selected>Selecione um funcionário aprovado</option>
+            ${approved.map(e=>`<option value="${e.id}">${e.nome} — ${e.cidade}</option>`).join("")}
+          </select>
+          <p class="hint">Somente funcionários já aprovados no seu grupo podem ser selecionados.</p>
+        </div>
+
+        <div class="err" id="evErr">Preencha título, data, horário e destinatário.</div>
+        <button class="btn btn-primary" id="addEventBtn">Marcar evento</button>
+      </div>
+
+      <div class="panel">
+        <h3><span class="num">04</span>Cronograma visual</h3>
+        ${renderCalendarBlock(companyEvents, adm.nomeEmpresa)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindAdminDashboardEvents(adm){
+  document.getElementById("pendingList").addEventListener("click",(e)=>{
+    const apBtn = e.target.closest("[data-approve]");
+    const rjBtn = e.target.closest("[data-reject]");
+    if(apBtn){
+      const m = state.memberships.find(x=>x.id===apBtn.getAttribute("data-approve"));
+      if(m) m.status = "approved";
+      render();
+    }
+    if(rjBtn){
+      const id = rjBtn.getAttribute("data-reject");
+      state.memberships = state.memberships.filter(x=>x.id!==id);
+      render();
+    }
+  });
+
+  document.getElementById("approvedList").addEventListener("click",(e)=>{
+    const btn = e.target.closest("[data-revoke]");
+    if(!btn) return;
+    const empId = btn.getAttribute("data-revoke");
+    state.memberships = state.memberships.filter(m => !(m.employeeId===empId && m.companyId===adm.id));
+    state.events = state.events.filter(ev => !(ev.companyId===adm.id && ev.destino===empId));
+    render();
+  });
+
+  document.querySelectorAll('input[name="destino"]').forEach(r=>{
+    r.addEventListener("change", (e)=>{
+      document.getElementById("individualBlock").style.display =
+        e.target.value === "individual" ? "block" : "none";
+    });
+  });
+
+  document.getElementById("addEventBtn").addEventListener("click", ()=>{
+    const titulo = document.getElementById("evTitulo").value.trim();
+    const data = document.getElementById("evData").value;
+    const hora = document.getElementById("evHora").value;
+    const desc = document.getElementById("evDesc").value.trim();
+    const destinoTipo = document.querySelector('input[name="destino"]:checked').value;
+    const empId = document.getElementById("evEmpSelect")?.value;
+    const errBox = document.getElementById("evErr");
+
+    const destinoValido = destinoTipo === "todos" || (destinoTipo === "individual" && empId);
+    if(!titulo || !data || !hora || !destinoValido){
+      errBox.style.display = "block";
+      return;
+    }
+    errBox.style.display = "none";
+    state.events.push({
+      id: uid(), companyId: adm.id, titulo, data, hora, descricao: desc,
+      destino: destinoTipo === "todos" ? "todos" : empId
+    });
+    state.selectedDay = data;
+    render();
+  });
+
+  bindCalendarNav();
+  bindEventRemoval();
+}
+
+/* =========================================================
+   TELA: AUTENTICAÇÃO DO FUNCIONÁRIO (login + cadastro)
+   ========================================================= */
+function renderEmployeeAuthGate(){
+  const tab = state.employeeAuthTab;
+  return `
+  <div class="login-box">
+    <div class="panel">
+      <div class="tab-row">
+        <button class="btn ${tab==='login'?'btn-primary':'btn-ghost'}" data-emp-auth-tab="login">Já sou cadastrado</button>
+        <button class="btn ${tab==='register'?'btn-primary':'btn-ghost'}" data-emp-auth-tab="register">Fazer meu cadastro</button>
+      </div>
+      ${tab==="login" ? renderEmployeeLoginForm() : renderEmployeeRegisterForm()}
+    </div>
+  </div>`;
+}
+function renderEmployeeLoginForm(){
+  return `
+    <h3><span class="num">01</span>Entrar com meu CPF</h3>
+    <label>CPF</label>
+    <input type="text" id="empLoginCPF" class="mono" placeholder="000.000.000-00" maxlength="14">
+    <div class="err" id="empLoginErr">CPF não encontrado. Faça seu cadastro na outra aba.</div>
+    <button class="btn btn-primary" id="empLoginBtn">Entrar na minha conta</button>
+  `;
+}
+function renderEmployeeRegisterForm(){
+  return `
+    <h3><span class="num">01</span>Meu cadastro</h3>
+    <label>Nome completo</label>
+    <input type="text" id="regNome" placeholder="Ex: Maria Aparecida Souza">
+    <label>CPF</label>
+    <input type="text" id="regCPF" class="mono" placeholder="000.000.000-00" maxlength="14">
+    <label>Cidade (Santa Catarina)</label>
+    <select id="regCidade">
+      <option value="" disabled selected>Selecione a cidade</option>
+      ${SC_CITIES.map(c=>`<option value="${c}">${c}</option>`).join("")}
+    </select>
+    <div class="err" id="regErr">Confira os dados: nome, cidade e CPF (válido e ainda não cadastrado).</div>
+    <button class="btn btn-primary" id="registerBtn">Cadastrar e entrar</button>
+  `;
+}
+function bindEmployeeAuthEvents(){
+  document.querySelectorAll("[data-emp-auth-tab]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ state.employeeAuthTab = btn.getAttribute("data-emp-auth-tab"); render(); });
+  });
+
+  const loginCpf = document.getElementById("empLoginCPF");
+  if(loginCpf){
+    loginCpf.addEventListener("input", ()=>{ loginCpf.value = maskCPF(loginCpf.value); });
+    document.getElementById("empLoginBtn").addEventListener("click", ()=>{
+      const cpf = loginCpf.value;
+      const errBox = document.getElementById("empLoginErr");
+      const emp = state.employees.find(e => e.cpf === cpf);
+      if(emp){
+        state.session = { type:"funcionario", employeeId: emp.id };
+        state.selectedDay = null;
+        state.employeeActiveCompanyId = null;
+        render();
+      } else {
+        errBox.style.display = "block";
+      }
+    });
+  }
+
+  const regCpf = document.getElementById("regCPF");
+  if(regCpf){
+    regCpf.addEventListener("input", ()=>{ regCpf.value = maskCPF(regCpf.value); });
+    document.getElementById("registerBtn").addEventListener("click", ()=>{
+      const nome = document.getElementById("regNome").value.trim();
+      const cpf = regCpf.value.trim();
+      const cidade = document.getElementById("regCidade").value;
+      const errBox = document.getElementById("regErr");
+      const cpfDigits = cpf.replace(/\D/g,"");
+
+      let msg = "";
+      if(!nome) msg = "Informe seu nome completo.";
+      else if(!cidade) msg = "Selecione sua cidade.";
+      else if(cpfDigits.length !== 11) msg = "O CPF precisa ter 11 dígitos.";
+      else if(!isPlausibleCPF(cpf)) msg = "Esse CPF não é válido.";
+      else if(state.employees.some(e=>e.cpf===cpf)) msg = "Esse CPF já está cadastrado. Use a aba \"Já sou cadastrado\".";
+
+      if(msg){
+        errBox.textContent = msg;
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+      const novoFuncionario = { id: uid(), nome, cpf, cidade };
+      state.employees.push(novoFuncionario);
+      state.session = { type:"funcionario", employeeId: novoFuncionario.id };
+      state.selectedDay = null;
+      render();
+    });
+  }
+}
+
+/* =========================================================
+   TELA: PAINEL DO FUNCIONÁRIO
+   ========================================================= */
+function renderEmployeeDashboard(emp){
+  const myMemberships = state.memberships.filter(m=>m.employeeId===emp.id);
+  const approvedCompanies = approvedCompaniesOf(emp.id);
+
+  if(!state.employeeActiveCompanyId && approvedCompanies.length>0){
+    state.employeeActiveCompanyId = approvedCompanies[0].id;
+  }
+
+  const searchTerm = state.companySearch.trim().toLowerCase();
+  const filteredCompanies = state.admins.filter(a =>
+    !searchTerm || a.nomeEmpresa.toLowerCase().includes(searchTerm)
+  );
+
+  const activeCompany = state.admins.find(a=>a.id===state.employeeActiveCompanyId);
+  const calendarEvents = activeCompany
+    ? eventsVisibleToEmployeeInCompany(emp.id, activeCompany.id)
+    : [];
+
+  return `
+  <div class="layout" style="grid-template-columns:340px 1fr;">
+    <div>
+      <div class="panel">
+        <h3><span class="num">01</span>Minhas empresas</h3>
+        ${myMemberships.length===0 ? '<div class="empty">Você ainda não solicitou entrada em nenhuma empresa.</div>' :
+          myMemberships.map(m=>{
+            const company = state.admins.find(a=>a.id===m.companyId);
+            if(!company) return "";
+            return `
+              <div class="company-card">
+                <div class="info">
+                  <b>${company.nomeEmpresa}</b>
+                  <span>Responsável: ${company.nomeAdmin}</span>
+                </div>
+                <span class="badge ${m.status==='approved'?'badge-approved':'badge-pending'}">
+                  ${m.status==='approved' ? 'Aprovado' : 'Aguardando aprovação'}
+                </span>
+              </div>`;
+          }).join("")
+        }
+      </div>
+
+      <div class="panel">
+        <h3><span class="num">02</span>Buscar empresa</h3>
+        <input type="text" id="companySearchInput" placeholder="Digite o nome da empresa..." value="${state.companySearch}">
+        <div style="margin-top:14px;" id="companyResults">
+          ${filteredCompanies.length===0 ? '<div class="empty">Nenhuma empresa encontrada.</div>' :
+            filteredCompanies.map(c=>{
+              const m = membershipOf(emp.id, c.id);
+              let btnHtml;
+              if(!m) btnHtml = `<button class="btn btn-amber btn-sm" data-request="${c.id}">Solicitar entrada</button>`;
+              else if(m.status==="pending") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Solicitação enviada</button>`;
+              else btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Você já faz parte</button>`;
+              return `
+                <div class="company-card">
+                  <div class="info">
+                    <b>${c.nomeEmpresa}</b>
+                    <span>Responsável: ${c.nomeAdmin}</span>
+                  </div>
+                  ${btnHtml}
+                </div>`;
+            }).join("")
+          }
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3><span class="num">03</span>Minha agenda</h3>
+        ${approvedCompanies.length===0 ? `
+          <p class="hint">Assim que uma empresa aprovar sua solicitação, o cronograma dela aparece aqui.</p>
+        ` : `
+          <div class="company-tabs">
+            ${approvedCompanies.map(c=>`
+              <button data-cal-company="${c.id}" class="${c.id===state.employeeActiveCompanyId?'active':''}">${c.nomeEmpresa}</button>
+            `).join("")}
+          </div>
+          ${renderCalendarBlock(calendarEvents, activeCompany ? activeCompany.nomeEmpresa : "")}
+        `}
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindEmployeeDashboardEvents(emp){
+  const searchInput = document.getElementById("companySearchInput");
+  if(searchInput){
+    searchInput.addEventListener("input", ()=>{
+      state.companySearch = searchInput.value;
+      render();
+      // devolve o foco e o cursor para o fim do campo após o re-render
+      const el = document.getElementById("companySearchInput");
+      if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    });
+  }
+
+  const resultsBox = document.getElementById("companyResults");
+  if(resultsBox){
+    resultsBox.addEventListener("click",(e)=>{
+      const btn = e.target.closest("[data-request]");
+      if(!btn) return;
+      const companyId = btn.getAttribute("data-request");
+      state.memberships.push({ id: uid(), employeeId: emp.id, companyId, status: "pending" });
+      render();
+    });
+  }
+
+  document.querySelectorAll("[data-cal-company]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      state.employeeActiveCompanyId = btn.getAttribute("data-cal-company");
+      state.selectedDay = null;
+      render();
+    });
+  });
+
+  bindCalendarNav();
+  bindEventRemoval();
+}
+
+/* =========================================================
+   CALENDÁRIO (compartilhado)
+   ========================================================= */
+function renderCalendarBlock(eventList, title){
+  const year = state.calDate.getFullYear();
+  const month = state.calDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startWeekday = firstDay.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayKey = fmtDateKey(new Date());
+
+  let cells = "";
+  for(let i=0;i<startWeekday;i++) cells += `<div class="cal-day muted"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const dateObj = new Date(year, month, d);
+    const key = fmtDateKey(dateObj);
+    const dayEvents = eventsForDay(eventList, key);
+    const hasAll = dayEvents.some(e=>e.destino==="todos");
+    const hasOne = dayEvents.some(e=>e.destino!=="todos");
+    const classes = ["cal-day"];
+    if(key===todayKey) classes.push("today");
+    if(key===state.selectedDay) classes.push("selected");
+    cells += `
+      <div class="${classes.join(' ')}" data-day="${key}">
+        <span class="num">${String(d).padStart(2,"0")}</span>
+        <div class="cal-dots">
+          ${hasAll?'<span class="cal-dot dot-all"></span>':''}
+          ${hasOne?'<span class="cal-dot dot-one"></span>':''}
+        </div>
+      </div>`;
+  }
+
+  const selKey = state.selectedDay;
+  const selEvents = selKey ? eventsForDay(eventList, selKey) : [];
+
+  return `
+    <div class="cal-head">
+      <h3>${title} — ${MONTHS_PT[month]} ${year}</h3>
+      <div class="cal-nav">
+        <button data-cal-nav="-1">‹</button>
+        <button data-cal-nav="1">›</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      ${DOW_PT.map(d=>`<div class="cal-dow">${d}</div>`).join("")}
+      ${cells}
+    </div>
+    <div class="legend">
+      <span><span class="cal-dot dot-all"></span> Evento para todo o grupo</span>
+      <span><span class="cal-dot dot-one"></span> Evento individual</span>
+    </div>
+
+    <div class="agenda-title">${selKey ? "Eventos em " + fmtDatePretty(selKey) : "Selecione um dia para ver os detalhes"}</div>
+    <div id="dayAgenda">
+      ${selKey && selEvents.length===0 ? '<div class="empty">Nenhum evento nesta data.</div>' : ""}
+      ${selEvents.map(ev => renderEventCard(ev)).join("")}
+    </div>
+  `;
+}
+
+function renderEventCard(ev){
+  const isIndividual = ev.destino !== "todos";
+  const targetLabel = isIndividual
+    ? (state.employees.find(e=>e.id===ev.destino)?.nome || "Funcionário removido")
+    : "Todo o grupo";
+  const showRemove = state.role === "admin";
+  return `
+    <div class="event-card ${isIndividual?'individual':''}">
+      <div class="row">
+        <h4>${ev.titulo}</h4>
+        <span class="time mono">${ev.hora}</span>
+      </div>
+      ${ev.descricao ? `<p>${ev.descricao}</p>` : ""}
+      <span class="target">${isIndividual ? "Individual · " + targetLabel : "Grupo inteiro"}</span>
+      ${showRemove ? `<div><button class="rm" data-remove-event="${ev.id}">remover evento</button></div>` : ""}
+    </div>
+  `;
+}
+
+function bindCalendarNav(){
+  document.querySelectorAll("[data-cal-nav]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const delta = parseInt(btn.getAttribute("data-cal-nav"));
+      state.calDate.setMonth(state.calDate.getMonth() + delta);
+      render();
+    });
+  });
+  document.querySelectorAll("[data-day]").forEach(cell=>{
+    cell.addEventListener("click", ()=>{
+      const key = cell.getAttribute("data-day");
+      state.selectedDay = state.selectedDay === key ? null : key;
+      render();
+    });
+  });
+}
+
+function bindEventRemoval(){
+  const agenda = document.getElementById("dayAgenda");
+  if(!agenda) return;
+  agenda.addEventListener("click",(e)=>{
+    const btn = e.target.closest("[data-remove-event]");
+    if(!btn) return;
+    const id = btn.getAttribute("data-remove-event");
+    state.events = state.events.filter(ev=>ev.id!==id);
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
