@@ -23,7 +23,7 @@
     --slate:#5C6570;
     --line:#DBD5C6;
     --white:#FFFFFF;
-    --radius:10px;
+    --radius:12px;
   }
   *{box-sizing:border-box;}
   body{margin:0;}
@@ -116,17 +116,30 @@
   .gate-btn h3{font-size:19px;margin:8px 0 6px;}
   .gate-btn span{font-size:13.5px;color:var(--slate);}
 
+  .dashboard-wrap{max-width:1180px;margin:0 auto;padding:32px clamp(16px,4vw,48px) 64px;}
   .layout{
-    display:grid;grid-template-columns:340px 1fr;gap:24px;
-    padding:28px clamp(16px,4vw,48px) 60px;max-width:1180px;margin:0 auto;
+    display:grid;grid-template-columns:350px 1fr;gap:28px;
   }
   @media (max-width: 880px){ .layout{grid-template-columns:1fr;} }
+  .full-panel{margin-top:22px;}
+
+  .personal-panel-body{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;margin-top:16px;}
+  .personal-form-col{flex:0 0 300px;min-width:260px;}
+  .personal-cal-col{flex:1 1 480px;min-width:320px;}
+  @media (max-width: 700px){
+    .personal-form-col{flex:1 1 100%;}
+    .personal-cal-col{flex:1 1 100%;}
+  }
 
   .panel{
-    background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:24px;
+    box-shadow:0 1px 3px rgba(27,36,48,.05);
   }
-  .panel + .panel{margin-top:20px;}
-  .panel h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .panel + .panel{margin-top:22px;}
+  .panel h3{
+    font-size:15px;display:flex;align-items:center;gap:9px;margin-bottom:16px;
+    padding-bottom:12px;border-bottom:1px solid var(--line);
+  }
   .panel h3 .num{
     font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--white);
     background:var(--teal);border-radius:5px;padding:2px 7px;
@@ -137,6 +150,7 @@
   input[type=text],input[type=email],input[type=password],input[type=date],input[type=time],select,textarea{
     width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:7px;
     background:var(--paper);font-size:13.5px;color:var(--ink);outline:none;
+    transition:border-color .12s ease, box-shadow .12s ease;
   }
   input:focus,select:focus,textarea:focus{
     border-color:var(--teal);box-shadow:0 0 0 3px rgba(62,124,130,.15);
@@ -145,11 +159,11 @@
   .hint{font-size:11.5px;color:var(--slate);margin-top:5px;}
   .err{font-size:11.5px;color:var(--rose-dark);margin-top:5px;display:none;}
   .ok-msg{font-size:11.5px;color:var(--green-dark);margin-top:5px;}
-  .radio-row{display:flex;gap:16px;margin-top:6px;}
+  .radio-row{display:flex;gap:16px;margin-top:6px;flex-wrap:wrap;}
   .radio-row label{display:flex;align-items:center;gap:6px;font-weight:500;font-size:13px;margin:0;color:var(--ink);}
   .radio-row input{width:auto;}
 
-  .btn{border:none;border-radius:7px;padding:11px 16px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;}
+  .btn{border:none;border-radius:7px;padding:11px 16px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:background .12s ease, border-color .12s ease, color .12s ease;}
   .btn-primary{background:var(--ink);color:var(--paper);width:100%;justify-content:center;margin-top:16px;}
   .btn-primary:hover{background:var(--ink-2);}
   .btn-amber{background:var(--amber);color:var(--ink);}
@@ -163,7 +177,7 @@
 
   .emp-item{
     display:flex;justify-content:space-between;align-items:center;
-    padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;gap:10px;
+    padding:11px 0;border-bottom:1px solid var(--line);font-size:13px;gap:10px;
   }
   .emp-item:last-child{border-bottom:none;}
   .emp-item .who b{display:block;font-size:13.5px;}
@@ -179,9 +193,11 @@
   .badge-pending{background:#FBEFDC;color:var(--amber-dark);}
 
   .company-card{
-    border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;
+    border:1px solid var(--line);border-radius:9px;padding:13px 15px;margin-bottom:10px;
     display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    transition:border-color .12s ease;
   }
+  .company-card:hover{border-color:var(--teal);}
   .company-card .info b{display:block;font-size:14px;}
   .company-card .info span{font-size:12px;color:var(--slate);}
 
@@ -189,7 +205,7 @@
   .tab-row .btn{flex:1;margin-top:0;}
 
   .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
-  .cal-head h3{font-size:18px;}
+  .cal-head h3{font-size:18px;border:none;padding:0;margin:0;}
   .cal-nav{display:flex;gap:6px;}
   .cal-nav button{background:var(--paper-2);border:1px solid var(--line);border-radius:6px;width:30px;height:30px;font-size:14px;color:var(--ink);}
   .cal-nav button:hover{background:var(--line);}
@@ -246,6 +262,51 @@
   }
   .company-tabs button.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
 
+  /* --- seleção de destinatários (novo) --- */
+  .select-header{display:flex;justify-content:space-between;align-items:center;margin:16px 0 7px;}
+  .select-header label{margin:0;}
+  .sel-count{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal-dark);
+    background:#EAF2F2;padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+  .check-toolbar{display:flex;gap:14px;margin-bottom:8px;}
+  .check-toolbar button{
+    background:none;border:none;padding:0;font-size:11.5px;color:var(--teal-dark);
+    text-decoration:underline;
+  }
+  .checkbox-list{
+    max-height:230px;overflow-y:auto;border:1px solid var(--line);border-radius:9px;
+    padding:6px;background:var(--paper);display:flex;flex-direction:column;gap:3px;
+  }
+  .check-item{
+    display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;
+    cursor:pointer;transition:background .12s ease;
+  }
+  .check-item:hover{background:var(--paper-2);}
+  .check-item input{width:auto;margin:0;accent-color:var(--teal);flex-shrink:0;}
+  .check-item-info{display:flex;flex-direction:column;font-size:12.5px;}
+  .check-item-info b{font-size:13px;font-weight:600;}
+  .check-item-info span{color:var(--slate);font-size:11.5px;}
+
+  /* --- convite de admin / agenda pessoal (novo) --- */
+  .dot-personal{background:var(--teal);}
+  .event-card.personal{border-left-color:var(--teal);padding:6px 14px;}
+  .panel-note{font-size:12px;color:var(--slate);line-height:1.5;margin-top:4px;}
+  .section-divider{border:none;border-top:1px solid var(--line);margin:20px 0 14px;}
+
+  .personal-cal-wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
+  .personal-cal-left{flex:1 1 320px;min-width:260px;}
+  .personal-cal-right{flex:1 1 220px;min-width:210px;}
+  .personal-cal-right .agenda-title{margin-top:0;}
+
+  .compact-event-row{padding:11px 0;border-bottom:1px solid var(--line);}
+  .compact-event-row:last-child{border-bottom:none;}
+  .compact-event-row .row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .compact-event-row h5{font-size:13.5px;margin:0;font-family:'Space Grotesk',sans-serif;}
+  .compact-event-row .time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal-dark);white-space:nowrap;}
+  .compact-event-row p{font-size:12.5px;color:var(--slate);margin:4px 0 0;line-height:1.45;}
+  .compact-event-row .rm{background:none;border:none;color:var(--rose-dark);font-size:11px;text-decoration:underline;padding:0;margin-top:6px;display:inline-block;}
+
   ::selection{background:var(--amber);color:var(--ink);}
 </style>
 </head>
@@ -284,16 +345,26 @@ const state = {
 
   admins: [],                // {id, email, nomeAdmin, nomeEmpresa, senha}
   employees: [],              // {id, nome, cpf, cidade}
-  memberships: [],             // {id, employeeId, companyId, status:'pending'|'approved'}
-  events: [],                   // {id, companyId, titulo, data, hora, descricao, destino:'todos'|employeeId}
+  // memberships: {id, employeeId, companyId, status:'pending'|'approved', origin:'employee'|'admin'}
+  // origin 'employee' = o funcionário pediu para entrar (admin aprova)
+  // origin 'admin'    = o admin convidou o funcionário (funcionário aceita/recusa)
+  memberships: [],
+  // events: {id, companyId, titulo, data, hora, descricao, tipo:'todos'|'especificos', destinatarios:[employeeId,...]}
+  events: [],
+  // personalEvents: {id, ownerType:'admin'|'funcionario', ownerId, titulo, data, hora, descricao}
+  personalEvents: [],
 
   adminAuthTab: "login",         // 'login' | 'register'
   employeeAuthTab: "login",       // 'login' | 'register'
   companySearch: "",
+  employeeInviteSearch: "",
   employeeActiveCompanyId: null,
 
   calDate: new Date(),
   selectedDay: null,
+
+  personalCalDate: new Date(),
+  personalSelectedDay: null,
 };
 
 /* =========================================================
@@ -346,8 +417,16 @@ function approvedEmployeesOf(companyId){
     .map(m => state.employees.find(e=>e.id===m.employeeId))
     .filter(Boolean);
 }
-function pendingRequestsOf(companyId){
-  return state.memberships.filter(m => m.companyId===companyId && m.status==="pending");
+function pendingIncomingRequestsOf(companyId){
+  // funcionário pediu para entrar; admin precisa aprovar
+  return state.memberships.filter(m => m.companyId===companyId && m.status==="pending" && m.origin==="employee");
+}
+function pendingInvitesSentOf(companyId){
+  // admin convidou; funcionário precisa aceitar
+  return state.memberships.filter(m => m.companyId===companyId && m.status==="pending" && m.origin==="admin");
+}
+function personalEventsOf(ownerType, ownerId){
+  return state.personalEvents.filter(e => e.ownerType===ownerType && e.ownerId===ownerId);
 }
 function approvedCompaniesOf(employeeId){
   return state.memberships
@@ -357,7 +436,8 @@ function approvedCompaniesOf(employeeId){
 }
 function eventsVisibleToEmployeeInCompany(employeeId, companyId){
   return state.events.filter(e =>
-    e.companyId===companyId && (e.destino==="todos" || e.destino===employeeId)
+    e.companyId===companyId &&
+    (e.tipo==="todos" || (e.tipo==="especificos" && e.destinatarios.includes(employeeId)))
   );
 }
 
@@ -413,9 +493,11 @@ document.addEventListener("click", (e)=>{
     state.session = null;
     state.selectedDay = null;
     state.companySearch = "";
+    state.employeeInviteSearch = "";
     state.employeeActiveCompanyId = null;
     state.adminAuthTab = "login";
     state.employeeAuthTab = "login";
+    state.personalSelectedDay = null;
     render();
   }
 });
@@ -551,16 +633,19 @@ function bindAdminAuthEvents(){
    TELA: PAINEL DO ADMINISTRADOR
    ========================================================= */
 function renderAdminDashboard(adm){
-  const pending = pendingRequestsOf(adm.id);
+  const pending = pendingIncomingRequestsOf(adm.id);
+  const sentInvites = pendingInvitesSentOf(adm.id);
   const approved = approvedEmployeesOf(adm.id);
   const companyEvents = state.events.filter(e=>e.companyId===adm.id);
 
   return `
+  <div class="dashboard-wrap">
   <div class="layout">
     <div>
       <div class="panel">
-        <h3><span class="num">01</span>Solicitações pendentes <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${pending.length}</span></h3>
-        <div id="pendingList">
+        <h3><span class="num">01</span>Solicitações recebidas <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${pending.length}</span></h3>
+        <p class="panel-note">Funcionários que pediram para entrar no seu grupo.</p>
+        <div id="pendingList" style="margin-top:10px;">
           ${pending.length===0 ? '<div class="empty">Nenhuma solicitação no momento.</div>' :
             pending.map(m=>{
               const emp = state.employees.find(e=>e.id===m.employeeId);
@@ -581,7 +666,34 @@ function renderAdminDashboard(adm){
       </div>
 
       <div class="panel">
-        <h3><span class="num">02</span>Equipe aprovada <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${approved.length}</span></h3>
+        <h3><span class="num">02</span>Convidar funcionário</h3>
+        <p class="panel-note">Já sabe quem você quer no grupo? Busque pelo nome ou CPF e envie um convite — o funcionário decide se aceita.</p>
+        <label>Buscar por nome ou CPF</label>
+        <input type="text" id="inviteSearchInput" placeholder="Digite nome ou CPF..." value="${state.employeeInviteSearch}">
+        <div style="margin-top:12px;" id="inviteResults">
+          ${renderInviteResults(adm)}
+        </div>
+        ${sentInvites.length>0 ? `
+          <hr class="section-divider">
+          <div class="agenda-title" style="margin:0 0 8px;">Convites aguardando resposta</div>
+          <div id="sentInvitesList">
+            ${sentInvites.map(m=>{
+              const empx = state.employees.find(e=>e.id===m.employeeId);
+              return `
+                <div class="emp-item">
+                  <div class="who">
+                    <b>${empx ? empx.nome : "Funcionário"}</b>
+                    <span>${empx ? empx.cidade : ""}</span>
+                  </div>
+                  <button class="del-btn" data-cancel-invite="${m.id}">cancelar convite</button>
+                </div>`;
+            }).join("")}
+          </div>
+        ` : ""}
+      </div>
+
+      <div class="panel">
+        <h3><span class="num">03</span>Equipe aprovada <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${approved.length}</span></h3>
         <div id="approvedList">
           ${approved.length===0 ? '<div class="empty">Ninguém aprovado ainda.</div>' :
             approved.map(emp=>`
@@ -600,7 +712,7 @@ function renderAdminDashboard(adm){
 
     <div>
       <div class="panel">
-        <h3><span class="num">03</span>Nova marcação no cronograma</h3>
+        <h3><span class="num">04</span>Nova marcação no cronograma</h3>
         <label>Título do evento</label>
         <input type="text" id="evTitulo" placeholder="Ex: Reunião de alinhamento">
         <div style="display:flex; gap:12px;">
@@ -619,16 +731,34 @@ function renderAdminDashboard(adm){
         <label>Destinatário</label>
         <div class="radio-row">
           <label><input type="radio" name="destino" value="todos" checked> Todo o grupo</label>
-          <label><input type="radio" name="destino" value="individual"> Funcionário específico</label>
+          <label><input type="radio" name="destino" value="especificos"> Funcionário(s) específico(s)</label>
         </div>
 
         <div id="individualBlock" style="display:none;">
-          <label>Nome completo do funcionário</label>
-          <select id="evEmpSelect">
-            <option value="" disabled selected>Selecione um funcionário aprovado</option>
-            ${approved.map(e=>`<option value="${e.id}">${e.nome} — ${e.cidade}</option>`).join("")}
-          </select>
-          <p class="hint">Somente funcionários já aprovados no seu grupo podem ser selecionados.</p>
+          <div class="select-header">
+            <label>Selecione um ou mais funcionários</label>
+            <span class="mono sel-count" id="selCount">0 selecionado(s)</span>
+          </div>
+          ${approved.length>0 ? `
+            <div class="check-toolbar">
+              <button type="button" id="selAllEmp">selecionar todos</button>
+              <button type="button" id="selNoneEmp">limpar seleção</button>
+            </div>
+          ` : ""}
+          <div class="checkbox-list" id="evEmpChecklist">
+            ${approved.length===0 ? '<div class="empty">Nenhum funcionário aprovado ainda.</div>' :
+              approved.map(e=>`
+                <label class="check-item">
+                  <input type="checkbox" class="ev-emp-check" value="${e.id}">
+                  <span class="check-item-info">
+                    <b>${e.nome}</b>
+                    <span>${e.cidade}</span>
+                  </span>
+                </label>
+              `).join("")
+            }
+          </div>
+          <p class="hint">Somente funcionários já aprovados no seu grupo podem ser selecionados. Você pode marcar quantos quiser.</p>
         </div>
 
         <div class="err" id="evErr">Preencha título, data, horário e destinatário.</div>
@@ -636,11 +766,50 @@ function renderAdminDashboard(adm){
       </div>
 
       <div class="panel">
-        <h3><span class="num">04</span>Cronograma visual</h3>
+        <h3><span class="num">05</span>Cronograma visual</h3>
         ${renderCalendarBlock(companyEvents, adm.nomeEmpresa)}
       </div>
     </div>
+  </div>
+
+  <div class="full-panel">
+    ${renderPersonalAgendaPanel("06", "admin", adm.id)}
+  </div>
   </div>`;
+}
+
+function renderInviteResults(adm){
+  const term = state.employeeInviteSearch.trim().toLowerCase();
+  if(term.length < 2){
+    return '<p class="hint">Digite ao menos 2 letras do nome ou parte do CPF para buscar.</p>';
+  }
+  const cpfDigits = term.replace(/\D/g,"");
+  const results = state.employees.filter(emp=>{
+    const already = state.memberships.some(m=>m.employeeId===emp.id && m.companyId===adm.id);
+    if(already) return false;
+    const nameMatch = emp.nome.toLowerCase().includes(term);
+    const cpfMatch = cpfDigits.length>=3 && emp.cpf.replace(/\D/g,"").includes(cpfDigits);
+    return nameMatch || cpfMatch;
+  }).slice(0,8);
+
+  if(results.length===0) return '<div class="empty">Nenhum funcionário encontrado (ou já vinculado ao grupo).</div>';
+
+  return results.map(emp=>`
+    <div class="emp-item">
+      <div class="who">
+        <b>${emp.nome}</b>
+        <span>${emp.cidade} · <span class="mono">${emp.cpf}</span></span>
+      </div>
+      <button class="btn btn-teal btn-sm" data-invite="${emp.id}">Convidar</button>
+    </div>
+  `).join("");
+}
+
+function updateSelCount(){
+  const countEl = document.getElementById("selCount");
+  if(!countEl) return;
+  const n = document.querySelectorAll(".ev-emp-check:checked").length;
+  countEl.textContent = `${n} selecionado(s)`;
 }
 
 function bindAdminDashboardEvents(adm){
@@ -664,16 +833,74 @@ function bindAdminDashboardEvents(adm){
     if(!btn) return;
     const empId = btn.getAttribute("data-revoke");
     state.memberships = state.memberships.filter(m => !(m.employeeId===empId && m.companyId===adm.id));
-    state.events = state.events.filter(ev => !(ev.companyId===adm.id && ev.destino===empId));
+    state.events = state.events.reduce((acc, ev)=>{
+      if(ev.companyId===adm.id && ev.tipo==="especificos" && ev.destinatarios.includes(empId)){
+        const restantes = ev.destinatarios.filter(id=>id!==empId);
+        if(restantes.length===0) return acc; // ninguém mais para ver o evento: remove
+        acc.push({ ...ev, destinatarios: restantes });
+        return acc;
+      }
+      acc.push(ev);
+      return acc;
+    }, []);
     render();
   });
+
+  const inviteSearchInput = document.getElementById("inviteSearchInput");
+  if(inviteSearchInput){
+    inviteSearchInput.addEventListener("input", ()=>{
+      state.employeeInviteSearch = inviteSearchInput.value;
+      render();
+      const el = document.getElementById("inviteSearchInput");
+      if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    });
+  }
+  const inviteResults = document.getElementById("inviteResults");
+  if(inviteResults){
+    inviteResults.addEventListener("click",(e)=>{
+      const btn = e.target.closest("[data-invite]");
+      if(!btn) return;
+      const employeeId = btn.getAttribute("data-invite");
+      state.memberships.push({ id: uid(), employeeId, companyId: adm.id, status: "pending", origin: "admin" });
+      render();
+    });
+  }
+  const sentInvitesList = document.getElementById("sentInvitesList");
+  if(sentInvitesList){
+    sentInvitesList.addEventListener("click",(e)=>{
+      const btn = e.target.closest("[data-cancel-invite]");
+      if(!btn) return;
+      const id = btn.getAttribute("data-cancel-invite");
+      state.memberships = state.memberships.filter(m=>m.id!==id);
+      render();
+    });
+  }
 
   document.querySelectorAll('input[name="destino"]').forEach(r=>{
     r.addEventListener("change", (e)=>{
       document.getElementById("individualBlock").style.display =
-        e.target.value === "individual" ? "block" : "none";
+        e.target.value === "especificos" ? "block" : "none";
     });
   });
+
+  const checklist = document.getElementById("evEmpChecklist");
+  if(checklist){
+    checklist.addEventListener("change", updateSelCount);
+  }
+  const selAllBtn = document.getElementById("selAllEmp");
+  if(selAllBtn){
+    selAllBtn.addEventListener("click", ()=>{
+      document.querySelectorAll(".ev-emp-check").forEach(cb=>cb.checked=true);
+      updateSelCount();
+    });
+  }
+  const selNoneBtn = document.getElementById("selNoneEmp");
+  if(selNoneBtn){
+    selNoneBtn.addEventListener("click", ()=>{
+      document.querySelectorAll(".ev-emp-check").forEach(cb=>cb.checked=false);
+      updateSelCount();
+    });
+  }
 
   document.getElementById("addEventBtn").addEventListener("click", ()=>{
     const titulo = document.getElementById("evTitulo").value.trim();
@@ -681,10 +908,10 @@ function bindAdminDashboardEvents(adm){
     const hora = document.getElementById("evHora").value;
     const desc = document.getElementById("evDesc").value.trim();
     const destinoTipo = document.querySelector('input[name="destino"]:checked').value;
-    const empId = document.getElementById("evEmpSelect")?.value;
+    const empIds = Array.from(document.querySelectorAll(".ev-emp-check:checked")).map(el=>el.value);
     const errBox = document.getElementById("evErr");
 
-    const destinoValido = destinoTipo === "todos" || (destinoTipo === "individual" && empId);
+    const destinoValido = destinoTipo === "todos" || (destinoTipo === "especificos" && empIds.length>0);
     if(!titulo || !data || !hora || !destinoValido){
       errBox.style.display = "block";
       return;
@@ -692,7 +919,8 @@ function bindAdminDashboardEvents(adm){
     errBox.style.display = "none";
     state.events.push({
       id: uid(), companyId: adm.id, titulo, data, hora, descricao: desc,
-      destino: destinoTipo === "todos" ? "todos" : empId
+      tipo: destinoTipo,
+      destinatarios: destinoTipo === "todos" ? [] : empIds
     });
     state.selectedDay = data;
     render();
@@ -700,6 +928,7 @@ function bindAdminDashboardEvents(adm){
 
   bindCalendarNav();
   bindEventRemoval();
+  bindPersonalAgendaEvents("admin", adm.id);
 }
 
 /* =========================================================
@@ -820,26 +1049,40 @@ function renderEmployeeDashboard(emp){
     : [];
 
   return `
-  <div class="layout" style="grid-template-columns:340px 1fr;">
+  <div class="dashboard-wrap">
+  <div class="layout" style="grid-template-columns:350px 1fr;">
     <div>
       <div class="panel">
         <h3><span class="num">01</span>Minhas empresas</h3>
+        <div id="myMembershipsList">
         ${myMemberships.length===0 ? '<div class="empty">Você ainda não solicitou entrada em nenhuma empresa.</div>' :
           myMemberships.map(m=>{
             const company = state.admins.find(a=>a.id===m.companyId);
             if(!company) return "";
+            let rightHtml;
+            if(m.status==="approved"){
+              rightHtml = `<span class="badge badge-approved">Aprovado</span>`;
+            } else if(m.origin==="admin"){
+              rightHtml = `
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <span class="badge badge-pending">Convite recebido</span>
+                  <button class="btn btn-teal btn-sm" data-accept-invite="${m.id}">Aceitar</button>
+                  <button class="del-btn" data-decline-invite="${m.id}">recusar</button>
+                </div>`;
+            } else {
+              rightHtml = `<span class="badge badge-pending">Aguardando aprovação</span>`;
+            }
             return `
               <div class="company-card">
                 <div class="info">
                   <b>${company.nomeEmpresa}</b>
                   <span>Responsável: ${company.nomeAdmin}</span>
                 </div>
-                <span class="badge ${m.status==='approved'?'badge-approved':'badge-pending'}">
-                  ${m.status==='approved' ? 'Aprovado' : 'Aguardando aprovação'}
-                </span>
+                ${rightHtml}
               </div>`;
           }).join("")
         }
+        </div>
       </div>
 
       <div class="panel">
@@ -851,7 +1094,8 @@ function renderEmployeeDashboard(emp){
               const m = membershipOf(emp.id, c.id);
               let btnHtml;
               if(!m) btnHtml = `<button class="btn btn-amber btn-sm" data-request="${c.id}">Solicitar entrada</button>`;
-              else if(m.status==="pending") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Solicitação enviada</button>`;
+              else if(m.status==="pending" && m.origin==="employee") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Solicitação enviada</button>`;
+              else if(m.status==="pending" && m.origin==="admin") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Convite recebido — veja acima</button>`;
               else btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Você já faz parte</button>`;
               return `
                 <div class="company-card">
@@ -869,7 +1113,7 @@ function renderEmployeeDashboard(emp){
 
     <div>
       <div class="panel">
-        <h3><span class="num">03</span>Minha agenda</h3>
+        <h3><span class="num">03</span>Agenda da empresa</h3>
         ${approvedCompanies.length===0 ? `
           <p class="hint">Assim que uma empresa aprovar sua solicitação, o cronograma dela aparece aqui.</p>
         ` : `
@@ -882,6 +1126,11 @@ function renderEmployeeDashboard(emp){
         `}
       </div>
     </div>
+  </div>
+
+  <div class="full-panel">
+    ${renderPersonalAgendaPanel("04", "funcionario", emp.id)}
+  </div>
   </div>`;
 }
 
@@ -903,8 +1152,26 @@ function bindEmployeeDashboardEvents(emp){
       const btn = e.target.closest("[data-request]");
       if(!btn) return;
       const companyId = btn.getAttribute("data-request");
-      state.memberships.push({ id: uid(), employeeId: emp.id, companyId, status: "pending" });
+      state.memberships.push({ id: uid(), employeeId: emp.id, companyId, status: "pending", origin: "employee" });
       render();
+    });
+  }
+
+  const membershipsList = document.getElementById("myMembershipsList");
+  if(membershipsList){
+    membershipsList.addEventListener("click",(e)=>{
+      const acceptBtn = e.target.closest("[data-accept-invite]");
+      const declineBtn = e.target.closest("[data-decline-invite]");
+      if(acceptBtn){
+        const m = state.memberships.find(x=>x.id===acceptBtn.getAttribute("data-accept-invite"));
+        if(m) m.status = "approved";
+        render();
+      }
+      if(declineBtn){
+        const id = declineBtn.getAttribute("data-decline-invite");
+        state.memberships = state.memberships.filter(x=>x.id!==id);
+        render();
+      }
     });
   }
 
@@ -918,6 +1185,173 @@ function bindEmployeeDashboardEvents(emp){
 
   bindCalendarNav();
   bindEventRemoval();
+  bindPersonalAgendaEvents("funcionario", emp.id);
+}
+
+/* =========================================================
+   AGENDA PESSOAL (compartilhada entre admin e funcionário)
+   ========================================================= */
+function renderPersonalAgendaPanel(num, ownerType, ownerId){
+  const events = personalEventsOf(ownerType, ownerId);
+  const selDay = state.personalSelectedDay;
+  return `
+  <div class="panel">
+    <h3><span class="num">${num}</span>Minha agenda pessoal</h3>
+    <p class="panel-note">Compromissos só seus — ninguém mais vê isso, nem o grupo nem outros funcionários.</p>
+    <div class="personal-panel-body">
+      <div class="personal-form-col">
+        <label>Título</label>
+        <input type="text" id="peTitulo" placeholder="Ex: Consulta médica">
+
+        <label>Data</label>
+        <input type="date" id="peData" value="${selDay || ''}">
+        ${selDay
+          ? `<p class="ok-msg">Data ${fmtDatePretty(selDay)} preenchida a partir do calendário — agora complete título e horário.</p>`
+          : `<p class="hint">Dica: clique em um dia no calendário ao lado para preencher a data automaticamente.</p>`
+        }
+
+        <label>Horário</label>
+        <input type="time" id="peHora">
+        <label>Descrição</label>
+        <textarea id="peDesc" placeholder="Detalhes (opcional)"></textarea>
+        <div class="err" id="peErr">Preencha título, data e horário.</div>
+        <button class="btn btn-primary" id="addPersonalEventBtn">Adicionar compromisso</button>
+      </div>
+      <div class="personal-cal-col">
+        ${renderPersonalCalendarBlock(events, "Agenda pessoal")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindPersonalAgendaEvents(ownerType, ownerId){
+  const btn = document.getElementById("addPersonalEventBtn");
+  if(btn){
+    btn.addEventListener("click", ()=>{
+      const titulo = document.getElementById("peTitulo").value.trim();
+      const data = document.getElementById("peData").value;
+      const hora = document.getElementById("peHora").value;
+      const desc = document.getElementById("peDesc").value.trim();
+      const errBox = document.getElementById("peErr");
+      if(!titulo || !data || !hora){
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+      state.personalEvents.push({ id: uid(), ownerType, ownerId, titulo, data, hora, descricao: desc });
+      state.personalSelectedDay = data;
+      render();
+    });
+  }
+  bindPersonalCalendarNav();
+  bindPersonalEventRemoval();
+}
+
+function renderPersonalCalendarBlock(eventList, title){
+  const year = state.personalCalDate.getFullYear();
+  const month = state.personalCalDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startWeekday = firstDay.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayKey = fmtDateKey(new Date());
+
+  let cells = "";
+  for(let i=0;i<startWeekday;i++) cells += `<div class="cal-day muted"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const dateObj = new Date(year, month, d);
+    const key = fmtDateKey(dateObj);
+    const dayEvents = eventsForDay(eventList, key);
+    const has = dayEvents.length>0;
+    const classes = ["cal-day"];
+    if(key===todayKey) classes.push("today");
+    if(key===state.personalSelectedDay) classes.push("selected");
+    cells += `
+      <div class="${classes.join(' ')}" data-personal-day="${key}">
+        <span class="num">${String(d).padStart(2,"0")}</span>
+        <div class="cal-dots">
+          ${has?'<span class="cal-dot dot-personal"></span>':''}
+        </div>
+      </div>`;
+  }
+
+  const selKey = state.personalSelectedDay;
+  const selEvents = selKey ? eventsForDay(eventList, selKey) : [];
+
+  let rightContent;
+  if(!selKey){
+    rightContent = '<div class="empty">Clique em um dia no calendário para ver os compromissos.</div>';
+  } else if(selEvents.length===0){
+    rightContent = '<div class="empty">Nenhum compromisso nesta data.</div>';
+  } else {
+    rightContent = `<div class="event-card personal">${selEvents.map(renderCompactPersonalRow).join("")}</div>`;
+  }
+
+  return `
+    <div class="cal-head">
+      <h3>${title} — ${MONTHS_PT[month]} ${year}</h3>
+      <div class="cal-nav">
+        <button data-personal-cal-nav="-1">‹</button>
+        <button data-personal-cal-nav="1">›</button>
+      </div>
+    </div>
+    <div class="personal-cal-wrap">
+      <div class="personal-cal-left">
+        <div class="cal-grid">
+          ${DOW_PT.map(d=>`<div class="cal-dow">${d}</div>`).join("")}
+          ${cells}
+        </div>
+        <div class="legend">
+          <span><span class="cal-dot dot-personal"></span> Compromisso pessoal</span>
+        </div>
+      </div>
+      <div class="personal-cal-right">
+        <div class="agenda-title">${selKey ? "Compromissos em " + fmtDatePretty(selKey) : "Selecione um dia"}</div>
+        <div id="personalDayAgenda">${rightContent}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCompactPersonalRow(ev){
+  return `
+    <div class="compact-event-row">
+      <div class="row-top">
+        <h5>${ev.titulo}</h5>
+        <span class="time mono">${ev.hora}</span>
+      </div>
+      ${ev.descricao ? `<p>${ev.descricao}</p>` : ""}
+      <button class="rm" data-remove-personal-event="${ev.id}">remover compromisso</button>
+    </div>
+  `;
+}
+
+function bindPersonalCalendarNav(){
+  document.querySelectorAll("[data-personal-cal-nav]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const delta = parseInt(btn.getAttribute("data-personal-cal-nav"));
+      state.personalCalDate.setMonth(state.personalCalDate.getMonth() + delta);
+      render();
+    });
+  });
+  document.querySelectorAll("[data-personal-day]").forEach(cell=>{
+    cell.addEventListener("click", ()=>{
+      const key = cell.getAttribute("data-personal-day");
+      state.personalSelectedDay = state.personalSelectedDay === key ? null : key;
+      render();
+    });
+  });
+}
+
+function bindPersonalEventRemoval(){
+  const agenda = document.getElementById("personalDayAgenda");
+  if(!agenda) return;
+  agenda.addEventListener("click",(e)=>{
+    const btn = e.target.closest("[data-remove-personal-event]");
+    if(!btn) return;
+    const id = btn.getAttribute("data-remove-personal-event");
+    state.personalEvents = state.personalEvents.filter(ev=>ev.id!==id);
+    render();
+  });
 }
 
 /* =========================================================
@@ -937,8 +1371,8 @@ function renderCalendarBlock(eventList, title){
     const dateObj = new Date(year, month, d);
     const key = fmtDateKey(dateObj);
     const dayEvents = eventsForDay(eventList, key);
-    const hasAll = dayEvents.some(e=>e.destino==="todos");
-    const hasOne = dayEvents.some(e=>e.destino!=="todos");
+    const hasAll = dayEvents.some(e=>e.tipo==="todos");
+    const hasOne = dayEvents.some(e=>e.tipo==="especificos");
     const classes = ["cal-day"];
     if(key===todayKey) classes.push("today");
     if(key===state.selectedDay) classes.push("selected");
@@ -969,7 +1403,7 @@ function renderCalendarBlock(eventList, title){
     </div>
     <div class="legend">
       <span><span class="cal-dot dot-all"></span> Evento para todo o grupo</span>
-      <span><span class="cal-dot dot-one"></span> Evento individual</span>
+      <span><span class="cal-dot dot-one"></span> Evento para funcionário(s) específico(s)</span>
     </div>
 
     <div class="agenda-title">${selKey ? "Eventos em " + fmtDatePretty(selKey) : "Selecione um dia para ver os detalhes"}</div>
@@ -981,19 +1415,23 @@ function renderCalendarBlock(eventList, title){
 }
 
 function renderEventCard(ev){
-  const isIndividual = ev.destino !== "todos";
-  const targetLabel = isIndividual
-    ? (state.employees.find(e=>e.id===ev.destino)?.nome || "Funcionário removido")
-    : "Todo o grupo";
+  const isEspecifico = ev.tipo !== "todos";
+  let targetLabel = "Todo o grupo";
+  let tagLabel = "Grupo inteiro";
+  if(isEspecifico){
+    const nomes = ev.destinatarios.map(id => state.employees.find(e=>e.id===id)?.nome || "Funcionário removido");
+    targetLabel = nomes.length <= 2 ? nomes.join(" e ") : `${nomes[0]} + ${nomes.length-1} outro(s)`;
+    tagLabel = (nomes.length > 1 ? "Vários funcionários · " : "Específico · ") + targetLabel;
+  }
   const showRemove = state.role === "admin";
   return `
-    <div class="event-card ${isIndividual?'individual':''}">
+    <div class="event-card ${isEspecifico?'individual':''}">
       <div class="row">
         <h4>${ev.titulo}</h4>
         <span class="time mono">${ev.hora}</span>
       </div>
       ${ev.descricao ? `<p>${ev.descricao}</p>` : ""}
-      <span class="target">${isIndividual ? "Individual · " + targetLabel : "Grupo inteiro"}</span>
+      <span class="target">${tagLabel}</span>
       ${showRemove ? `<div><button class="rm" data-remove-event="${ev.id}">remover evento</button></div>` : ""}
     </div>
   `;
