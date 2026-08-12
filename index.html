@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cronograma — Painel da Equipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  (function(){
+    try{
+      var t = localStorage.getItem("cronograma_theme");
+      if(t===null && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches){ t = "dark"; }
+      if(t){ document.documentElement.setAttribute("data-theme", t); }
+    }catch(e){}
+  })();
+</script>
+<style>
+  :root{
+    --ink:#1B2430;
+    --ink-2:#252F3F;
+    --paper:#F7F5F0;
+    --paper-2:#EFEBE1;
+    --amber:#E8A33D;
+    --amber-dark:#C4832A;
+    --teal:#3E7C82;
+    --teal-dark:#2E5F64;
+    --rose:#C1666B;
+    --rose-dark:#A54F54;
+    --green:#4C8A62;
+    --green-dark:#3A6B4C;
+    --slate:#5C6570;
+    --line:#DBD5C6;
+    --white:#FFFFFF;
+    --radius:10px;
+    /* superfícies "marca" (topbar, botões primários) — mantêm tom escuro nos dois temas */
+    --brand:#1B2430;
+    --brand-2:#252F3F;
+    --brand-text:#F7F5F0;
+    --brand-muted:#B9C0CC;
+    --brand-border:#3A4658;
+    /* chips de status / prioridade */
+    --chip-green-bg:#E4EFE8; --chip-green-text:#3A6B4C;
+    --chip-amber-bg:#FBEFDC; --chip-amber-text:#C4832A;
+    --chip-rose-bg:#F6E1E0;  --chip-rose-text:#A54F54;
+    /* sombra e shell */
+    --shadow:0 6px 24px rgba(27,36,48,.08);
+    --side-bg:#F2EFE9;
+    --side-border:#D9D2C1;
+    --nav-hover-bg:#EAE6DC;
+    --nav-active-bg:#1B2430;
+    --nav-active-text:#F7F5F0;
+  }
+  [data-theme="dark"]{
+    --ink:#E7E4DE;
+    --ink-2:#C9C5BB;
+    --paper:#0B0F16;
+    --paper-2:#151A24;
+    --amber:#E8A33D;
+    --amber-dark:#F0B55C;
+    --teal:#4E9AA1;
+    --teal-dark:#72B8BE;
+    --rose:#D18287;
+    --rose-dark:#E39A9E;
+    --green:#63A67E;
+    --green-dark:#8AC5A3;
+    --slate:#9AA3AE;
+    --line:#233043;
+    --white:#111827;
+    --brand:#0A0D13;
+    --brand-2:#151B25;
+    --brand-text:#F0EEE8;
+    --brand-muted:#A9B2BE;
+    --brand-border:#233043;
+    --chip-green-bg:#203528; --chip-green-text:#8AC5A3;
+    --chip-amber-bg:#382E1C; --chip-amber-text:#F0B55C;
+    --chip-rose-bg:#392428;  --chip-rose-text:#E39A9E;
+    --shadow:0 6px 28px rgba(0,0,0,.45);
+    --side-bg:#0D1117;
+    --side-border:#1E2633;
+    --nav-hover-bg:#151B25;
+    --nav-active-bg:#1E293B;
+    --nav-active-text:#F3F4F6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background .25s ease,color .25s ease;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk',sans-serif;
+    margin:0;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  .ticker{
+    height:14px;
+    background:repeating-linear-gradient(90deg,var(--ink) 0 2px, transparent 2px 10px);
+    opacity:.5;
+  }
+
+  .topbar{
+    background:var(--brand);
+    color:var(--brand-text);
+    padding:22px clamp(16px,4vw,48px);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .topbar-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .theme-toggle{
+    background:rgba(255,255,255,.07);
+    border:1px solid var(--brand-border);
+    color:var(--brand-text);
+    border-radius:999px;
+    padding:8px 14px;
+    font-size:12.5px;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:background .15s ease,color .15s ease;
+  }
+  .theme-toggle:hover{background:var(--amber);color:var(--brand);}
+  .theme-toggle .ic{font-size:14px;line-height:1;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .idx{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--amber);
+    border:1px solid var(--amber);
+    border-radius:4px;
+    padding:2px 6px;
+  }
+  .brand h1{font-size:22px;letter-spacing:-.01em;}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:var(--brand-muted);}
+  .role-pill{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    background:var(--brand-2);
+    border:1px solid var(--brand-border);
+    color:var(--brand-text);
+    padding:6px 12px;
+    border-radius:999px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .role-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);}
+  .role-pill button{
+    background:none;border:none;color:var(--brand-muted);font-size:12px;text-decoration:underline;
+    padding:0;margin-left:6px;
+  }
+
+  .wrap{max-width:1400px;margin:0 auto;padding:0 clamp(16px,4vw,48px);}
+
+  .gate{
+    min-height:70vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 16px;
+  }
+  .gate-card{max-width:640px;text-align:center;}
+  .gate-card .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;letter-spacing:.15em;color:var(--teal-dark);text-transform:uppercase;
+  }
+  .gate-card h2{font-size:clamp(28px,4vw,38px);margin:10px 0 12px;}
+  .gate-card p{color:var(--slate);font-size:15px;line-height:1.6;margin:0 0 30px;}
+  .gate-options{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+  .gate-btn{
+    width:260px;text-align:left;background:var(--white);
+    border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    box-shadow:0 1px 0 rgba(27,36,48,.03);
+  }
+  .gate-btn:hover{transform:translateY(-3px);border-color:var(--ink);box-shadow:0 10px 24px rgba(27,36,48,.08);}
+  .gate-btn .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+    color:var(--amber-dark);text-transform:uppercase;
+  }
+  .gate-btn h3{font-size:19px;margin:8px 0 6px;}
+  .gate-btn span{font-size:13.5px;color:var(--slate);}
+
+  .layout{
+    display:grid;grid-template-columns:340px 1fr;gap:24px;
+    padding:28px clamp(16px,4vw,48px) 60px;max-width:1180px;margin:0 auto;
+  }
+  @media (max-width: 880px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+  }
+  .panel + .panel{margin-top:20px;}
+  .panel h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .panel h3 .num{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--white);
+    background:var(--teal);border-radius:5px;padding:2px 7px;
+  }
+
+  label{display:block;font-size:12.5px;font-weight:600;margin:14px 0 6px;color:var(--ink-2);}
+  label:first-of-type{margin-top:0;}
+  input[type=text],input[type=email],input[type=password],input[type=date],input[type=time],select,textarea{
+    width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:7px;
+    background:var(--paper);font-size:13.5px;color:var(--ink);outline:none;
+  }
+  input:focus,select:focus,textarea:focus{
+    border-color:var(--teal);box-shadow:0 0 0 3px rgba(62,124,130,.15);
+  }
+  textarea{resize:vertical;min-height:64px;}
+  .hint{font-size:11.5px;color:var(--slate);margin-top:5px;}
+  .err{font-size:11.5px;color:var(--rose-dark);margin-top:5px;display:none;}
+  .ok-msg{font-size:11.5px;color:var(--green-dark);margin-top:5px;}
+  .radio-row{display:flex;gap:16px;margin-top:6px;}
+  .radio-row label{display:flex;align-items:center;gap:6px;font-weight:500;font-size:13px;margin:0;color:var(--ink);}
+  .radio-row input{width:auto;}
+
+  .btn{border:none;border-radius:7px;padding:11px 16px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;}
+  .btn-primary{background:var(--brand);color:var(--brand-text);width:100%;justify-content:center;margin-top:16px;}
+  .btn-primary:hover{background:var(--brand-2);}
+  .btn-amber{background:var(--amber);color:var(--ink);}
+  .btn-amber:hover{background:var(--amber-dark);color:var(--white);}
+  .btn-teal{background:var(--teal);color:var(--white);}
+  .btn-teal:hover{background:var(--teal-dark);}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--ink);}
+  .btn-rose{background:var(--rose);color:var(--white);}
+  .btn-rose:hover{background:var(--rose-dark);}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+  .btn:disabled{opacity:.5;cursor:default;}
+
+  .emp-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;gap:10px;
+  }
+  .emp-item:last-child{border-bottom:none;}
+  .emp-item .who b{display:block;font-size:13.5px;}
+  .emp-item .who span{color:var(--slate);font-size:12px;}
+  .del-btn{background:none;border:none;color:var(--rose-dark);font-size:11.5px;text-decoration:underline;padding:0;white-space:nowrap;}
+  .empty{color:var(--slate);font-size:13px;text-align:center;padding:18px 0;}
+
+  .badge{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.04em;
+    padding:3px 8px;border-radius:999px;white-space:nowrap;
+  }
+  .badge-approved{background:var(--chip-green-bg);color:var(--chip-green-text);}
+  .badge-pending{background:var(--chip-amber-bg);color:var(--chip-amber-text);}
+
+  .company-card{
+    border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .company-card .info b{display:block;font-size:14px;}
+  .company-card .info span{font-size:12px;color:var(--slate);}
+
+  .tab-row{display:flex;gap:8px;margin-bottom:18px;}
+  .tab-row .btn{flex:1;margin-top:0;}
+
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .cal-head h3{font-size:18px;}
+  .cal-nav{display:flex;gap:6px;}
+  .cal-nav button{background:var(--paper-2);border:1px solid var(--line);border-radius:6px;width:30px;height:30px;font-size:14px;color:var(--ink);}
+  .cal-nav button:hover{background:var(--line);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-dow{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--slate);
+    text-align:center;text-transform:uppercase;letter-spacing:.05em;padding-bottom:4px;
+  }
+  .cal-day{
+    aspect-ratio:1/0.85;border:1px solid var(--line);border-radius:8px;padding:6px 6px 4px;
+    background:var(--paper);cursor:pointer;display:flex;flex-direction:column;position:relative;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .cal-day.muted{opacity:.35;pointer-events:none;}
+  .cal-day:hover{border-color:var(--teal);}
+  .cal-day.selected{border-color:var(--ink);background:var(--paper-2);}
+  .cal-day.today .num{color:var(--teal-dark);}
+  .cal-day .num{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
+  .cal-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:auto;}
+  .cal-dot{width:6px;height:6px;border-radius:50%;}
+  .dot-all{background:var(--amber);}
+  .dot-one{background:var(--rose);}
+  .dot-group{background:var(--teal);}
+
+  .legend{display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--slate);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend .cal-dot{width:7px;height:7px;}
+
+  .agenda-title{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.08em;
+    color:var(--slate);text-transform:uppercase;margin:22px 0 10px;
+  }
+  .event-card{
+    border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:8px;
+    padding:12px 14px;margin-bottom:10px;background:var(--paper);
+  }
+  .event-card.individual{border-left-color:var(--rose);}
+  .event-card.group{border-left-color:var(--teal);}
+  .event-card .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .event-card h4{font-size:14px;margin-bottom:3px;}
+  .event-card .time{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--teal-dark);white-space:nowrap;}
+  .event-card p{font-size:13px;color:var(--slate);margin:6px 0 0;line-height:1.5;}
+  .event-card .target{
+    display:inline-block;margin-top:8px;font-size:11px;font-family:'IBM Plex Mono',monospace;
+    padding:2px 8px;border-radius:999px;background:var(--paper-2);color:var(--ink-2);
+  }
+  .event-card .target.prio-alta{background:var(--chip-rose-bg);color:var(--chip-rose-text);}
+  .event-card .target.prio-media{background:var(--chip-amber-bg);color:var(--chip-amber-text);}
+  .event-card .target.prio-baixa{background:var(--chip-green-bg);color:var(--chip-green-text);}
+  .rsvp-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+  .rsvp-summary{margin-top:10px;font-size:11.5px;color:var(--slate);}
+  .event-card .rm{background:none;border:none;color:var(--rose-dark);font-size:11px;text-decoration:underline;margin-top:8px;}
+
+  .login-box{max-width:460px;margin:60px auto;}
+  .login-box.wide{max-width:520px;}
+  .login-box .panel{box-shadow:0 18px 40px -20px rgba(27,36,48,.18);}
+
+  .auth-head{margin-bottom:18px;}
+  .auth-head .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    color:var(--teal-dark);text-transform:uppercase;
+  }
+  .auth-head h3{font-size:20px;margin:6px 0 4px;}
+  .auth-head p{font-size:13px;color:var(--slate);margin:0;}
+
+  .avatar-row{display:flex;align-items:center;gap:14px;margin:16px 0 4px;}
+  .avatar-upload{
+    position:relative;width:64px;height:64px;border-radius:50%;flex:none;
+    background:var(--paper-2);border:1.5px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
+    transition:border-color .15s ease;
+  }
+  .avatar-upload.is-logo{border-radius:14px;}
+  .avatar-upload:hover{border-color:var(--teal);}
+  .avatar-upload img{width:100%;height:100%;object-fit:cover;display:none;}
+  .avatar-upload .ph{font-size:20px;color:var(--slate);}
+  .avatar-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .avatar-meta b{display:block;font-size:13px;margin-bottom:2px;}
+  .avatar-meta span{font-size:11.5px;color:var(--slate);}
+  .avatar-meta .avatar-remove{background:none;border:none;color:var(--rose-dark);font-size:11.5px;text-decoration:underline;padding:0;margin-top:3px;display:none;}
+
+  .avatar-thumb{
+    width:26px;height:26px;border-radius:50%;object-fit:cover;flex:none;
+    border:1px solid var(--brand-border);
+  }
+  .avatar-thumb.is-logo{border-radius:7px;}
+  .avatar-fallback{
+    width:26px;height:26px;border-radius:50%;flex:none;
+    background:var(--teal);color:var(--white);
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .avatar-fallback.is-logo{border-radius:7px;background:var(--amber);color:var(--ink);}
+
+  .field-row{display:flex;gap:12px;}
+  .field-row > div{flex:1;}
+
+  .dash-head{
+    display:flex;align-items:center;gap:14px;justify-content:space-between;
+    flex-wrap:wrap;margin:28px clamp(16px,4vw,48px) 0;max-width:1180px;margin-left:auto;margin-right:auto;
+  }
+  .dash-head .who{display:flex;align-items:center;gap:12px;}
+  .dash-head .avatar-thumb, .dash-head .avatar-fallback{width:44px;height:44px;font-size:14px;border:none;}
+  .dash-head h2{font-size:20px;}
+  .dash-head p{margin:2px 0 0;font-size:12.5px;color:var(--slate);}
+  .dash-head .contact{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--slate);
+    display:flex;gap:14px;flex-wrap:wrap;
+  }
+
+  .company-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .company-tabs button{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 13px;font-size:12.5px;color:var(--ink);
+  }
+  .company-tabs button.active{background:var(--brand);color:var(--brand-text);border-color:var(--brand);}
+
+  /* --- seletor de cor (roda) --- */
+  .color-wheel{margin-top:2px;}
+  .cw-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .cw-canvas-wrap{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+  #cwWheel,#cwSV{display:block;border-radius:8px;max-width:100%;}
+  #cwWheel{border:1px solid var(--line);}
+  #cwSV{border:1px solid var(--line);}
+  .cw-preview{
+    width:46px;height:46px;border-radius:10px;flex:none;
+    border:1px solid var(--line);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);
+  }
+  .cw-hex{font-size:12px;color:var(--slate);letter-spacing:.03em;}
+  .cw-favs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .cw-fav-label{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--slate);
+  }
+  .cw-fav-empty{font-size:12px;color:var(--slate);}
+  .cw-fav-dot{
+    width:30px;height:30px;border-radius:50%;position:relative;cursor:pointer;
+    border:2px solid var(--white);box-shadow:0 0 0 1px var(--line);
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .cw-fav-dot:hover{transform:scale(1.12);}
+  .cw-fav-dot.active{box-shadow:0 0 0 2px var(--ink);}
+  .cw-fav-dot .x{
+    position:absolute;top:-7px;right:-7px;width:16px;height:16px;border-radius:50%;
+    background:var(--rose);color:#fff;font-size:10px;line-height:16px;text-align:center;
+    display:none;border:none;cursor:pointer;font-family:inherit;
+  }
+  .cw-fav-dot:hover .x{display:block;}
+  .fav-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);}
+
+  /* --- shell SaaS (sidebar + header) --- */
+  .shell{display:grid;grid-template-columns:250px 1fr;gap:0;}
+  .sidebar{
+    background:var(--side-bg);border-right:1px solid var(--side-border);
+    display:flex;flex-direction:column;padding:18px 14px 14px;gap:16px;min-height:100%;
+  }
+  .side-site{display:flex;align-items:center;gap:10px;padding:2px 6px 14px;border-bottom:1px solid var(--side-border);min-width:0;}
+  .side-site-logo{
+    width:36px;height:36px;border-radius:9px;background:var(--brand);color:var(--brand-text);
+    display:flex;align-items:center;justify-content:center;font-weight:700;
+    font-family:'Space Grotesk',sans-serif;font-size:13px;overflow:hidden;flex:none;
+  }
+  .side-site-logo img{width:100%;height:100%;object-fit:cover;}
+  .side-site-logo.is-person{background:var(--teal);color:var(--white);}
+  .side-site-tx{min-width:0;}
+  .side-site-tx b{display:block;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .side-site-tx span{font-size:11px;color:var(--slate);}
+  .side-nav{display:flex;flex-direction:column;gap:4px;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:600;
+    color:var(--ink-2);background:transparent;border:none;transition:background .15s ease,color .15s ease;
+  }
+  .nav-item .ic{flex:none;opacity:.75;}
+  .nav-item:hover{background:var(--nav-hover-bg);}
+  .nav-item.active{background:var(--nav-active-bg);color:var(--nav-active-text);}
+  .nav-item.active .ic{opacity:1;}
+  .nav-badge{
+    margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;
+    background:var(--amber);color:var(--ink);padding:1px 7px;border-radius:999px;
+  }
+  .side-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--side-border);}
+  .side-user{display:flex;align-items:center;gap:10px;min-width:0;}
+  .side-user .avatar-thumb,.side-user .avatar-fallback{width:36px;height:36px;font-size:12px;}
+  .su-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .su-role{font-size:11px;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .side-sair{margin-left:auto;background:none;border:none;color:var(--slate);font-size:11px;text-decoration:underline;padding:0;flex:none;}
+  .side-sair:hover{color:var(--rose-dark);}
+
+  .main{min-width:0;padding:22px clamp(16px,3vw,34px) 60px;}
+  .page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+  .ph-title{display:flex;align-items:center;gap:12px;min-width:0;}
+  .ph-title h2{font-size:22px;letter-spacing:-.01em;}
+  .ph-title p{margin:3px 0 0;font-size:12.5px;color:var(--slate);}
+  .icon-btn{
+    width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--white);
+    color:var(--ink);display:inline-flex;align-items:center;justify-content:center;flex:none;
+  }
+  .icon-btn:hover{background:var(--paper-2);}
+  .drawer-btn{display:none;}
+  .btn-header{width:auto;margin:0;}
+
+  .view-grid{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:18px;align-items:start;}
+  .view-grid .panel{min-width:0;}
+  .view-grid .panel + .panel{margin-top:0;}
+  .ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;}
+  .ov-grid .panel{min-width:0;}
+  .ov-grid .panel + .panel{margin-top:0;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px;}
+  .stat-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px;}
+  .stat-num{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;color:var(--ink);line-height:1;}
+  .stat-lb{font-size:12.5px;font-weight:600;margin-top:8px;color:var(--ink-2);}
+  .stat-hint{font-size:11.5px;color:var(--slate);margin-top:2px;}
+
+  .welcome{margin-bottom:18px;}
+  .welcome h2{font-size:24px;letter-spacing:-.01em;}
+  .welcome p{margin:3px 0 0;font-size:13px;color:var(--slate);}
+
+  .quick-actions{display:flex;flex-direction:column;gap:8px;}
+  .qa{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    padding:10px 12px;border-radius:8px;border:1px solid var(--line);
+    background:var(--paper);color:var(--ink);font-size:13.5px;font-weight:600;
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .qa:hover{border-color:var(--teal);background:var(--paper-2);}
+
+  .mini-ev{display:flex;align-items:flex-start;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line);}
+  .mini-ev:last-child{border-bottom:none;}
+  .me-time{font-size:12px;color:var(--teal-dark);padding-top:2px;flex:none;width:46px;}
+  .me-body{min-width:0;}
+  .me-body b{display:block;font-size:13.5px;color:var(--ink);}
+  .me-body span{font-size:12px;color:var(--slate);display:block;}
+  .mini-ev .tag{flex:none;margin-top:2px;}
+
+  .cal-today{
+    width:auto;height:30px;padding:0 12px;border-radius:6px;
+    background:none;border:1px solid var(--line);color:var(--ink);
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+  }
+  .cal-today:hover{background:var(--line);}
+
+  /* drawer / mobile */
+  .shell-mask{display:none;}
+  @media (max-width:980px){
+    .shell{grid-template-columns:1fr;}
+    .drawer-btn{display:inline-flex;}
+    .sidebar{
+      position:fixed;top:0;left:0;bottom:0;width:264px;z-index:60;
+      transform:translateX(-105%);transition:transform .22s ease;
+      box-shadow:var(--shadow);min-height:100vh;
+    }
+    .sidebar.open{transform:translateX(0);}
+    .shell.drawer-open .shell-mask{display:block;position:fixed;inset:0;background:rgba(8,11,16,.55);z-index:50;}
+  }
+  @media (max-width:880px){
+    .view-grid{grid-template-columns:1fr;}
+    .ov-grid{grid-template-columns:1fr;}
+  }
+
+  ::selection{background:var(--amber);color:var(--ink);}
+</style>
+</head>
+<body>
+
+<div class="ticker"></div>
+<div class="topbar">
+    <div class="brand">
+      <span class="idx">CR—01</span>
+      <div>
+        <h1>Cronograma</h1>
+        <p>Painel de marcações da equipe</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div id="roleIndicator"></div>
+      <button class="theme-toggle" id="themeToggleBtn" type="button" aria-label="Ativar modo escuro">
+        <span class="ic" id="themeToggleIcon">🌙</span><span id="themeToggleLabel">Escuro</span>
+      </button>
+    </div>
+  </div>
+
+<div id="app" class="wrap"></div>
+
+<script>
+/* =========================================================
+   ESTADO (em memória — sem persistência entre recarregamentos)
+   ========================================================= */
+const SC_CITIES = [
+  "Araranguá","Balneário Camboriú","Biguaçu","Blumenau","Brusque","Caçador",
+  "Camboriú","Canoinhas","Chapecó","Concórdia","Criciúma","Florianópolis",
+  "Gaspar","Indaial","Itajaí","Itapema","Jaraguá do Sul","Joinville","Lages",
+  "Mafra","Navegantes","Palhoça","Rio do Sul","São Bento do Sul",
+  "São Francisco do Sul","São José","Tijucas","Timbó","Tubarão","Videira",
+  "Xanxerê"
+];
+
+const state = {
+  role: null,              // 'admin' | 'funcionario'
+  session: null,            // {type:'admin', adminId} | {type:'funcionario', employeeId}
+
+  admins: [],                // {id, email, nomeAdmin, nomeEmpresa, senha, telefone, bio, logoUrl}
+  employees: [],              // {id, nome, cpf, cidade, email, senha, telefone, bio, fotoUrl}
+  memberships: [],             // {id, employeeId, companyId, status:'pending'|'approved', initiatedBy:'employee'|'admin'}
+  events: [],                   // {id, companyId, titulo, data, hora, local, prioridade, descricao, destinoTipo:'todos'|'grupo'|'individual', destinoId, confirmations:{employeeId:'confirmado'|'recusado'}}
+  groups: [],                    // {id, companyId, nome, cor, membros:[employeeId,...]}
+  favColors: [],                 // até 8 cores hex favoritas no seletor de cor do grupo
+
+  adminView: "cronograma",        // 'cronograma'|'dashboard'|'equipe'|'funcionarios'|'grupos'
+  employeeView: "agenda",         // 'agenda'|'dashboard'|'empresas'|'convites'
+
+  adminAuthTab: "login",         // 'login' | 'register'
+  employeeAuthTab: "login",       // 'login' | 'register'
+  companySearch: "",
+  employeeSearch: "",
+  employeeActiveCompanyId: null,
+
+  calDate: new Date(),
+  selectedDay: null,
+};
+
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+function maskCPF(value){
+  let v = value.replace(/\D/g,"").slice(0,11);
+  v = v.replace(/(\d{3})(\d)/,"$1.$2");
+  v = v.replace(/(\d{3})(\d)/,"$1.$2");
+  v = v.replace(/(\d{3})(\d{1,2})$/,"$1-$2");
+  return v;
+}
+function isPlausibleCPF(raw){
+  const cpf = raw.replace(/\D/g,"");
+  return cpf.length === 11 && !/^(\d)\1{10}$/.test(cpf);
+}
+function isValidGmail(email){
+  return /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email.trim());
+}
+function maskPhoneBR(value){
+  let v = value.replace(/\D/g,"").slice(0,11);
+  if(v.length > 6) v = v.replace(/(\d{2})(\d{4,5})(\d{0,4})/, "($1) $2-$3");
+  else if(v.length > 2) v = v.replace(/(\d{2})(\d{0,5})/, "($1) $2");
+  else v = v.replace(/(\d{0,2})/, "($1");
+  return v.trim();
+}
+function isValidPhoneBR(raw){
+  const digits = raw.replace(/\D/g,"");
+  return digits.length === 10 || digits.length === 11;
+}
+function initials(name){
+  const parts = (name||"").trim().split(/\s+/).filter(Boolean);
+  if(parts.length===0) return "?";
+  return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+}
+// liga um upload de avatar/logo: preview circular + callback com dataURL
+function bindAvatarUpload(fileInputId, previewImgId, placeholderElId, removeBtnId, onChange){
+  const input = document.getElementById(fileInputId);
+  if(!input) return;
+  const preview = document.getElementById(previewImgId);
+  const placeholder = document.getElementById(placeholderElId);
+  const removeBtn = document.getElementById(removeBtnId);
+  input.addEventListener("change", ()=>{
+    const file = input.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      preview.src = e.target.result;
+      preview.style.display = "block";
+      if(placeholder) placeholder.style.display = "none";
+      if(removeBtn) removeBtn.style.display = "inline";
+      onChange(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+  if(removeBtn){
+    removeBtn.addEventListener("click", ()=>{
+      input.value = "";
+      preview.style.display = "none";
+      preview.src = "";
+      if(placeholder) placeholder.style.display = "flex";
+      removeBtn.style.display = "none";
+      onChange(null);
+    });
+  }
+}
+
+function fmtDateKey(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function fmtDatePretty(key){
+  const [y,m,d] = key.split("-");
+  return `${d}/${m}/${y}`;
+}
+const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DOW_PT = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+function eventsForDay(list, key){
+  return list.filter(e => e.data === key).sort((a,b)=> a.hora.localeCompare(b.hora));
+}
+
+/* --- helpers de domínio --- */
+function currentAdmin(){
+  return state.admins.find(a => a.id === state.session?.adminId) || null;
+}
+function currentEmployee(){
+  return state.employees.find(e => e.id === state.session?.employeeId) || null;
+}
+function membershipOf(employeeId, companyId){
+  return state.memberships.find(m => m.employeeId===employeeId && m.companyId===companyId) || null;
+}
+function approvedEmployeesOf(companyId){
+  return state.memberships
+    .filter(m => m.companyId===companyId && m.status==="approved")
+    .map(m => state.employees.find(e=>e.id===m.employeeId))
+    .filter(Boolean);
+}
+// solicitações que o FUNCIONÁRIO enviou e o admin ainda precisa aprovar
+function pendingRequestsOf(companyId){
+  return state.memberships.filter(m => m.companyId===companyId && m.status==="pending" && m.initiatedBy==="employee");
+}
+// convites que o ADMIN enviou e ainda estão aguardando resposta do funcionário
+function pendingInvitesSentBy(companyId){
+  return state.memberships.filter(m => m.companyId===companyId && m.status==="pending" && m.initiatedBy==="admin");
+}
+// convites que um FUNCIONÁRIO recebeu de empresas e ainda precisa responder
+function invitesReceivedBy(employeeId){
+  return state.memberships.filter(m => m.employeeId===employeeId && m.status==="pending" && m.initiatedBy==="admin");
+}
+function approvedCompaniesOf(employeeId){
+  return state.memberships
+    .filter(m => m.employeeId===employeeId && m.status==="approved")
+    .map(m => state.admins.find(a=>a.id===m.companyId))
+    .filter(Boolean);
+}
+function groupsOf(companyId){
+  return state.groups.filter(g=>g.companyId===companyId);
+}
+function employeeInGroup(groupId, employeeId){
+  const g = state.groups.find(x=>x.id===groupId);
+  return !!(g && g.membros.includes(employeeId));
+}
+function eventsVisibleToEmployeeInCompany(employeeId, companyId){
+  return state.events.filter(e =>
+    e.companyId===companyId && (
+      e.destinoTipo==="todos" ||
+      (e.destinoTipo==="individual" && e.destinoId===employeeId) ||
+      (e.destinoTipo==="grupo" && employeeInGroup(e.destinoId, employeeId))
+    )
+  );
+}
+function audienceCountFor(ev){
+  if(ev.destinoTipo==="todos") return approvedEmployeesOf(ev.companyId).length;
+  if(ev.destinoTipo==="individual") return 1;
+  if(ev.destinoTipo==="grupo"){
+    const g = state.groups.find(x=>x.id===ev.destinoId);
+    return g ? g.membros.length : 0;
+  }
+  return 0;
+}
+
+/* =========================================================
+   RENDER RAIZ
+   ========================================================= */
+function render(){
+  const app = document.getElementById("app");
+  const roleBox = document.getElementById("roleIndicator");
+
+  if(!state.role){
+    roleBox.innerHTML = "";
+    app.innerHTML = renderGate();
+    return;
+  }
+
+  if(state.role === "admin" && !state.session){
+    roleBox.innerHTML = rolePillHTML("Administrador");
+    app.innerHTML = renderAdminAuthGate();
+    bindAdminAuthEvents();
+    return;
+  }
+  if(state.role === "admin" && state.session){
+    const adm = currentAdmin();
+    roleBox.innerHTML = rolePillHTML(adm.nomeEmpresa, adm.logoUrl, adm.nomeEmpresa, true);
+    app.innerHTML = renderAdminDashboard(adm);
+    bindAdminDashboardEvents(adm);
+    return;
+  }
+
+  if(state.role === "funcionario" && !state.session){
+    roleBox.innerHTML = rolePillHTML("Funcionário");
+    app.innerHTML = renderEmployeeAuthGate();
+    bindEmployeeAuthEvents();
+    return;
+  }
+  if(state.role === "funcionario" && state.session){
+    const emp = currentEmployee();
+    roleBox.innerHTML = rolePillHTML("Funcionário — " + emp.nome.split(" ")[0], emp.fotoUrl, emp.nome, false);
+    app.innerHTML = renderEmployeeDashboard(emp);
+    bindEmployeeDashboardEvents(emp);
+    return;
+  }
+}
+
+function rolePillHTML(label, imgUrl, name, isLogo){
+  const avatarHtml = imgUrl
+    ? `<img class="avatar-thumb${isLogo?' is-logo':''}" src="${imgUrl}" alt="">`
+    : `<span class="avatar-fallback${isLogo?' is-logo':''}">${initials(name)}</span>`;
+  return `<div class="role-pill">${avatarHtml}<span class="dot"></span>${label}
+    <button id="switchRoleBtn">sair</button></div>`;
+}
+function doSwitchRole(){
+  state.role = null;
+  state.session = null;
+  state.selectedDay = null;
+  state.companySearch = "";
+  state.employeeActiveCompanyId = null;
+  state.adminAuthTab = "login";
+  state.employeeAuthTab = "login";
+  state.adminView = "cronograma";
+  state.employeeView = "agenda";
+  render();
+}
+document.addEventListener("click", (e)=>{
+  if(e.target && e.target.id === "switchRoleBtn") doSwitchRole();
+});
+
+/* =========================================================
+   TEMA CLARO / ESCURO
+   ========================================================= */
+function loadTheme(){
+  let t = null;
+  try{ t = localStorage.getItem("cronograma_theme"); }catch(e){}
+  if(!t && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+  document.documentElement.setAttribute("data-theme", t || "light");
+  return t || "light";
+}
+function syncThemeUI(){
+  const theme = document.documentElement.getAttribute("data-theme") || "light";
+  const icon = document.getElementById("themeToggleIcon");
+  const label = document.getElementById("themeToggleLabel");
+  const btn = document.getElementById("themeToggleBtn");
+  if(icon) icon.textContent = theme === "light" ? "🌙" : "☀️";
+  if(label) label.textContent = theme === "light" ? "Escuro" : "Claro";
+  if(btn) btn.setAttribute("aria-label", theme === "light" ? "Ativar modo escuro" : "Ativar modo claro");
+}
+function bindThemeToggle(){
+  const btn = document.getElementById("themeToggleBtn");
+  if(!btn) return;
+  btn.addEventListener("click", ()=>{
+    const cur = document.documentElement.getAttribute("data-theme") || "light";
+    const next = cur === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    try{ localStorage.setItem("cronograma_theme", next); }catch(e){}
+    syncThemeUI();
+  });
+}
+
+/* =========================================================
+   TELA: SELEÇÃO DE PERFIL
+   ========================================================= */
+function renderGate(){
+  return `
+  <div class="gate">
+    <div class="gate-card">
+      <div class="eyebrow">Acesso ao painel</div>
+      <h2>Quem está entrando hoje?</h2>
+      <p>Administradores criam a conta da empresa e aprovam quem entra no grupo. Funcionários se cadastram, escolhem a empresa e aguardam liberação.</p>
+      <div class="gate-options">
+        <button class="gate-btn" id="pickAdmin">
+          <div class="tag">Chefia</div>
+          <h3>Sou Administrador</h3>
+          <span>Criar a conta da minha empresa e gerenciar o cronograma.</span>
+        </button>
+        <button class="gate-btn" id="pickEmployee">
+          <div class="tag">Equipe</div>
+          <h3>Sou Funcionário</h3>
+          <span>Me cadastrar, solicitar entrada em uma empresa e ver minha agenda.</span>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+document.addEventListener("click",(e)=>{
+  if(e.target.closest("#pickAdmin")){ state.role="admin"; state.adminAuthTab="login"; render(); }
+  if(e.target.closest("#pickEmployee")){ state.role="funcionario"; state.employeeAuthTab="login"; render(); }
+});
+
+/* =========================================================
+   TELA: AUTENTICAÇÃO DO ADMINISTRADOR (login + cadastro de empresa)
+   ========================================================= */
+function renderAdminAuthGate(){
+  const tab = state.adminAuthTab;
+  return `
+  <div class="login-box wide">
+    <div class="panel">
+      <div class="tab-row">
+        <button class="btn ${tab==='login'?'btn-primary':'btn-ghost'}" data-adm-tab="login">Entrar</button>
+        <button class="btn ${tab==='register'?'btn-primary':'btn-ghost'}" data-adm-tab="register">Criar conta da empresa</button>
+      </div>
+      ${tab==="login" ? renderAdminLoginForm() : renderAdminRegisterForm()}
+    </div>
+  </div>`;
+}
+function renderAdminLoginForm(){
+  return `
+    <h3><span class="num">01</span>Entrar como administrador</h3>
+    <label>E-mail (Gmail)</label>
+    <input type="email" id="admLoginEmail" placeholder="voce@gmail.com">
+    <label>Senha</label>
+    <input type="password" id="admLoginSenha" placeholder="••••••••">
+    <div class="err" id="admLoginErr">E-mail ou senha incorretos.</div>
+    <button class="btn btn-primary" id="admLoginBtn">Entrar</button>
+  `;
+}
+function renderAdminRegisterForm(){
+  return `
+    <div class="auth-head">
+      <div class="eyebrow">Nova empresa</div>
+      <h3>Criar conta da empresa</h3>
+      <p>Entre com seu Gmail e senha. Logo e descrição são opcionais.</p>
+    </div>
+
+    <div class="avatar-row">
+      <label class="avatar-upload is-logo" for="admRegLogoFile">
+        <img id="admRegLogoPreview" alt="Logo da empresa">
+        <span class="ph" id="admRegLogoPlaceholder">🏢</span>
+        <input type="file" id="admRegLogoFile" accept="image/*">
+      </label>
+      <div class="avatar-meta">
+        <b>Logo da empresa</b>
+        <span>Opcional · aparece no topo do painel</span>
+        <button type="button" class="avatar-remove" id="admRegLogoRemove">remover foto</button>
+      </div>
+    </div>
+
+    <label>E-mail (Gmail)</label>
+    <input type="email" id="admRegEmail" placeholder="voce@gmail.com">
+    <label>Nome do administrador</label>
+    <input type="text" id="admRegNome" placeholder="Ex: Carlos Henrique Lima">
+    <label>Nome da empresa</label>
+    <input type="text" id="admRegEmpresa" placeholder="Ex: Comércio Lima Ltda">
+    <label>Telefone</label>
+    <input type="text" id="admRegTelefone" class="mono" placeholder="(00) 00000-0000" maxlength="15">
+    <div class="field-row">
+      <div>
+        <label>Senha</label>
+        <input type="password" id="admRegSenha" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div>
+        <label>Confirmar senha</label>
+        <input type="password" id="admRegSenha2" placeholder="Repita a senha">
+      </div>
+    </div>
+    <label>Breve descrição da empresa <span class="hint" style="display:inline;margin:0;">(opcional)</span></label>
+    <textarea id="admRegBio" placeholder="Ex: Rede de comércio varejista em Santa Catarina."></textarea>
+    <div class="err" id="admRegErr">Confira os campos: e-mail Gmail válido, nome, empresa, telefone e senha (mín. 6 caracteres, iguais).</div>
+    <button class="btn btn-primary" id="admRegBtn">Criar conta e entrar</button>
+  `;
+}
+function bindAdminAuthEvents(){
+  document.querySelectorAll("[data-adm-tab]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ state.adminAuthTab = btn.getAttribute("data-adm-tab"); render(); });
+  });
+
+  const loginBtn = document.getElementById("admLoginBtn");
+  if(loginBtn){
+    loginBtn.addEventListener("click", ()=>{
+      const email = document.getElementById("admLoginEmail").value.trim().toLowerCase();
+      const senha = document.getElementById("admLoginSenha").value;
+      const errBox = document.getElementById("admLoginErr");
+      const adm = state.admins.find(a => a.email.toLowerCase()===email && a.senha===senha);
+      if(adm){
+        state.session = { type:"admin", adminId: adm.id };
+        render();
+      } else {
+        errBox.style.display = "block";
+      }
+    });
+  }
+
+  let admRegLogoDataUrl = null;
+  bindAvatarUpload("admRegLogoFile","admRegLogoPreview","admRegLogoPlaceholder","admRegLogoRemove",(dataUrl)=>{ admRegLogoDataUrl = dataUrl; });
+
+  const admRegTelefone = document.getElementById("admRegTelefone");
+  if(admRegTelefone){
+    admRegTelefone.addEventListener("input", ()=>{ admRegTelefone.value = maskPhoneBR(admRegTelefone.value); });
+  }
+
+  const regBtn = document.getElementById("admRegBtn");
+  if(regBtn){
+    regBtn.addEventListener("click", ()=>{
+      const email = document.getElementById("admRegEmail").value.trim();
+      const nomeAdmin = document.getElementById("admRegNome").value.trim();
+      const nomeEmpresa = document.getElementById("admRegEmpresa").value.trim();
+      const telefone = document.getElementById("admRegTelefone").value.trim();
+      const senha = document.getElementById("admRegSenha").value;
+      const senha2 = document.getElementById("admRegSenha2").value;
+      const bio = document.getElementById("admRegBio").value.trim();
+      const errBox = document.getElementById("admRegErr");
+
+      let msg = "";
+      if(!isValidGmail(email)) msg = "Informe um e-mail Gmail válido (ex: voce@gmail.com).";
+      else if(state.admins.some(a=>a.email.toLowerCase()===email.toLowerCase())) msg = "Já existe uma conta com esse e-mail. Use a aba \"Entrar\".";
+      else if(!nomeAdmin) msg = "Informe o nome do administrador.";
+      else if(!nomeEmpresa) msg = "Informe o nome da empresa.";
+      else if(!isValidPhoneBR(telefone)) msg = "Informe um telefone válido, com DDD.";
+      else if(senha.length < 6) msg = "A senha precisa ter pelo menos 6 caracteres.";
+      else if(senha !== senha2) msg = "As senhas não são iguais.";
+
+      if(msg){
+        errBox.textContent = msg;
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+      const novoAdmin = { id: uid(), email, nomeAdmin, nomeEmpresa, senha, telefone, bio, logoUrl: admRegLogoDataUrl };
+      state.admins.push(novoAdmin);
+      state.session = { type:"admin", adminId: novoAdmin.id };
+      render();
+    });
+  }
+}
+
+/* =========================================================
+   TELA: PAINEL DO ADMINISTRADOR
+   ========================================================= */
+
+/* --- helpers de shell SaaS: ícones, navegação, resumos --- */
+const ICONS = {
+  menu:'<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  dashboard:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  mail:'<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  chevL:'<polyline points="15 18 9 12 15 6"/>',
+  chevR:'<polyline points="9 18 15 12 9 6"/>',
+};
+function icon(name, size){
+  const s = size || 18;
+  return `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]||""}</svg>`;
+}
+const ADMIN_NAV = [
+  {id:"dashboard", label:"Dashboard", ic:"dashboard"},
+  {id:"cronograma", label:"Cronograma", ic:"calendar"},
+  {id:"equipe", label:"Equipe", ic:"users"},
+  {id:"funcionarios", label:"Funcionários", ic:"search"},
+  {id:"grupos", label:"Grupos", ic:"layers"},
+];
+const EMPLOYEE_NAV = [
+  {id:"dashboard", label:"Dashboard", ic:"dashboard"},
+  {id:"agenda", label:"Minha agenda", ic:"calendar"},
+  {id:"empresas", label:"Minhas empresas", ic:"briefcase"},
+  {id:"convites", label:"Convites", ic:"mail"},
+];
+function nextEvents(list, n){
+  const today = fmtDateKey(new Date());
+  return list.filter(e=>e.data>=today)
+    .sort((a,b)=> a.data===b.data ? a.hora.localeCompare(b.hora) : a.data.localeCompare(b.data))
+    .slice(0, n||6);
+}
+function stat(label, value){
+  return `<div class="stat-card"><div class="stat-num">${value}</div><div class="stat-lb">${label}</div></div>`;
+}
+function renderMiniEvent(ev){
+  let chip = "Todo o grupo";
+  if(ev.destinoTipo==="individual"){ const e=state.employees.find(x=>x.id===ev.destinoId); chip = "Individual · " + (e?e.nome:"removido"); }
+  else if(ev.destinoTipo==="grupo"){ const g=state.groups.find(x=>x.id===ev.destinoId); chip = "Grupo · " + (g?g.nome:"removido"); }
+  return `
+  <div class="mini-ev">
+    <span class="me-time mono">${ev.hora}</span>
+    <div class="me-body">
+      <b>${ev.titulo}</b>
+      <span>${chip}</span>
+      ${ev.local ? `<span>${ev.local}</span>` : ""}
+    </div>
+    ${ev.prioridade ? `<span class="tag prio-${ev.prioridade}">${PRIORIDADE_LABEL[ev.prioridade]}</span>` : ""}
+  </div>`;
+}
+function renderSideSite(role){
+  if(role==="admin"){
+    const adm = currentAdmin();
+    if(!adm) return "";
+    const logo = adm.logoUrl ? `<img src="${adm.logoUrl}" alt="">` : `<span>${initials(adm.nomeEmpresa)}</span>`;
+    return `<span class="side-site-logo">${logo}</span><div class="side-site-tx"><b>${adm.nomeEmpresa}</b><span>Administrador</span></div>`;
+  }
+  const emp = currentEmployee();
+  if(!emp) return "";
+  const av = emp.fotoUrl ? `<img src="${emp.fotoUrl}" alt="">` : `<span>${initials(emp.nome)}</span>`;
+  return `<span class="side-site-logo is-person">${av}</span><div class="side-site-tx"><b>${emp.nome.split(" ")[0]}</b><span>Funcionário</span></div>`;
+}
+function renderUserBlock(adm, emp){
+  if(adm){
+    const av = adm.logoUrl ? `<img class="avatar-thumb is-logo" src="${adm.logoUrl}" alt="">` : `<span class="avatar-fallback is-logo">${initials(adm.nomeEmpresa)}</span>`;
+    return `<div class="side-user">${av}<div style="min-width:0;"><div class="su-name">${adm.nomeAdmin}</div><div class="su-role">${adm.email}</div></div><button class="side-sair" type="button" id="sideSairBtn">sair</button></div>`;
+  }
+  if(emp){
+    const av = emp.fotoUrl ? `<img class="avatar-thumb" src="${emp.fotoUrl}" alt="">` : `<span class="avatar-fallback">${initials(emp.nome)}</span>`;
+    return `<div class="side-user">${av}<div style="min-width:0;"><div class="su-name">${emp.nome}</div><div class="su-role">${emp.email || emp.cidade}</div></div><button class="side-sair" type="button" id="sideSairBtn">sair</button></div>`;
+  }
+  return "";
+}
+function renderShell(role, navList, title, subtitle, body, action){
+  const active = role==="admin" ? (state.adminView||"cronograma") : (state.employeeView||"agenda");
+  let badges = {};
+  if(role==="admin"){ const a=currentAdmin(); if(a) badges.equipe = pendingRequestsOf(a.id).length; }
+  else { const e=currentEmployee(); if(e) badges.convites = invitesReceivedBy(e.id).length; }
+  const navHtml = navList.map(it=>{
+    const b = badges[it.id];
+    return `<button class="nav-item ${active===it.id?'active':''}" type="button" data-nav="${it.id}">
+      ${icon(it.ic)}<span class="nav-lb">${it.label}</span>
+      ${b ? `<span class="nav-badge">${b}</span>` : ""}
+    </button>`;
+  }).join("");
+  return `
+  <div class="shell">
+    <div class="shell-mask" data-drawer-close></div>
+    <aside class="sidebar" id="appSidebar">
+      <div class="side-site">${renderSideSite(role)}</div>
+      <nav class="side-nav" aria-label="Navegação principal">${navHtml}</nav>
+      <div class="side-foot">${renderUserBlock(role==="admin"?currentAdmin():null, role==="funcionario"?currentEmployee():null)}</div>
+    </aside>
+    <main class="main">
+      <header class="page-head">
+        <div class="ph-title">
+          <button class="icon-btn drawer-btn" type="button" data-drawer-open aria-label="Abrir menu">${icon("menu")}</button>
+          <div>
+            <h2>${title}</h2>
+            <p>${subtitle}</p>
+          </div>
+        </div>
+        <div class="ph-actions">${action||""}</div>
+      </header>
+      <div class="page-body">${body}</div>
+    </main>
+  </div>`;
+}
+function openDrawer(){
+  const s = document.getElementById("appSidebar");
+  const sh = document.querySelector(".shell");
+  if(s) s.classList.add("open");
+  if(sh) sh.classList.add("drawer-open");
+}
+function closeDrawer(){
+  const s = document.getElementById("appSidebar");
+  const sh = document.querySelector(".shell");
+  if(s) s.classList.remove("open");
+  if(sh) sh.classList.remove("drawer-open");
+}
+function bindShellEvents(role){
+  document.querySelectorAll("[data-nav]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const target = btn.getAttribute("data-nav");
+      if(role==="admin") state.adminView = target;
+      else state.employeeView = target;
+      render();
+    });
+  });
+  const open = document.querySelector("[data-drawer-open]");
+  if(open) open.addEventListener("click", ()=>{ openDrawer(); });
+  document.querySelectorAll("[data-drawer-close]").forEach(el=>{
+    el.addEventListener("click", ()=>{ closeDrawer(); });
+  });
+  const sair = document.getElementById("sideSairBtn");
+  if(sair) sair.addEventListener("click", ()=>{ doSwitchRole(); });
+}
+
+/* --- roda de cores (modelo ibisPaint) para cor do grupo --- */
+const CW_SIZE = 150;
+const CW_SV_H = 84;
+const _cwDefault = hexToHsv("#E8A33D");
+let cwH = _cwDefault.h, cwS = _cwDefault.s, cwV = _cwDefault.v;
+let cwWheelBase = null;
+let cwDrag = null;
+
+function hexToRgb(hex){
+  hex = String(hex).replace("#","");
+  if(hex.length === 3) hex = hex.split("").map(c=>c+c).join("");
+  const n = parseInt(hex,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHex(r,g,b){
+  return "#"+ [r,g,b].map(n=>Math.max(0,Math.min(255,Math.round(n))).toString(16).padStart(2,"0")).join("");
+}
+function rgbToHsv(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  let h=0;
+  if(d!==0){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h*=60;
+    if(h<0) h+=360;
+  }
+  return { h, s: max===0 ? 0 : d/max, v: max };
+}
+function hexToHsv(hex){
+  const {r,g,b} = hexToRgb(hex);
+  return rgbToHsv(r,g,b);
+}
+function hsvToRgb(h,s,v){
+  h = ((h%360)+360)%360;
+  const c = v*s, x = c*(1-Math.abs((h/60)%2-1)), m = v-c;
+  let r=0,g=0,b=0;
+  if(h<60){ r=c; g=x; }
+  else if(h<120){ r=x; g=c; }
+  else if(h<180){ g=c; b=x; }
+  else if(h<240){ g=x; b=c; }
+  else if(h<300){ r=x; b=c; }
+  else{ r=c; b=x; }
+  return { r:Math.round((r+m)*255), g:Math.round((g+m)*255), b:Math.round((b+m)*255) };
+}
+function currentCWColor(){
+  return rgbToHex(hsvToRgb(cwH,cwS,cwV)).toUpperCase();
+}
+function makeCWBase(size){
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = size;
+  const ctx = cv.getContext("2d");
+  const cx = size/2, cy = size/2, R = size/2-2;
+  for(let y=0;y<size;y+=2){
+    for(let x=0;x<size;x+=2){
+      const dx=x-cx, dy=y-cy;
+      if(Math.hypot(dx,dy) > R) continue;
+      const hue = (Math.atan2(dy,dx)*180/Math.PI+360)%360;
+      ctx.fillStyle = "hsl("+hue+",100%,50%)";
+      ctx.fillRect(x,y,2,2);
+    }
+  }
+  return cv;
+}
+function paintCW(){
+  const wheel = document.getElementById("cwWheel");
+  const sv = document.getElementById("cwSV");
+  if(!wheel || !sv) return;
+  if(!cwWheelBase) cwWheelBase = makeCWBase(CW_SIZE);
+  const hexColor = currentCWColor();
+
+  const ctx = wheel.getContext("2d");
+  ctx.clearRect(0,0,CW_SIZE,CW_SIZE);
+  ctx.drawImage(cwWheelBase,0,0);
+  const R = CW_SIZE/2-2, cx = CW_SIZE/2, cy = CW_SIZE/2;
+  const ang = cwH*Math.PI/180;
+  const mx = cx+Math.cos(ang)*(R-10), my = cy+Math.sin(ang)*(R-10);
+  ctx.beginPath(); ctx.arc(mx,my,8,0,Math.PI*2);
+  ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 4; ctx.stroke();
+  ctx.beginPath(); ctx.arc(mx,my,8,0,Math.PI*2);
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+
+  const sctx = sv.getContext("2d");
+  sctx.clearRect(0,0,CW_SIZE,CW_SV_H);
+  const g1 = sctx.createLinearGradient(0,0,CW_SIZE,0);
+  g1.addColorStop(0,"#fff");
+  g1.addColorStop(1,"hsl("+cwH+",100%,50%)");
+  sctx.fillStyle = g1;
+  sctx.fillRect(0,0,CW_SIZE,CW_SV_H);
+  const g2 = sctx.createLinearGradient(0,0,0,CW_SV_H);
+  g2.addColorStop(0,"rgba(0,0,0,0)");
+  g2.addColorStop(1,"rgba(0,0,0,1)");
+  sctx.fillStyle = g2;
+  sctx.fillRect(0,0,CW_SIZE,CW_SV_H);
+  const mx2 = cwS*CW_SIZE, my2 = (1-cwV)*CW_SV_H;
+  sctx.beginPath(); sctx.arc(mx2,my2,7,0,Math.PI*2);
+  sctx.strokeStyle = "rgba(0,0,0,.35)"; sctx.lineWidth = 4; sctx.stroke();
+  sctx.beginPath(); sctx.arc(mx2,my2,7,0,Math.PI*2);
+  sctx.strokeStyle = "#fff"; sctx.lineWidth = 2; sctx.stroke();
+
+  const preview = document.getElementById("cwPreview");
+  const hex = document.getElementById("cwHex");
+  const hidden = document.getElementById("groupCor");
+  if(preview) preview.style.background = hexColor;
+  if(hex) hex.textContent = hexColor;
+  if(hidden) hidden.value = hexColor;
+  document.querySelectorAll("[data-fav]").forEach(d=>{
+    d.classList.toggle("active", (d.getAttribute("data-fav")||"").toLowerCase() === hexColor.toLowerCase());
+  });
+}
+function setCWColor(hex){
+  const d = hexToHsv(hex);
+  cwH = d.h; cwS = d.s; cwV = d.v;
+  paintCW();
+}
+function cwPickWheel(ev){
+  const wheel = document.getElementById("cwWheel");
+  if(!wheel) return;
+  const R = CW_SIZE/2-2, cx = CW_SIZE/2, cy = CW_SIZE/2;
+  const rect = wheel.getBoundingClientRect();
+  const dx = ev.clientX-rect.left-cx, dy = ev.clientY-rect.top-cy;
+  if(Math.hypot(dx,dy) > R) return;
+  cwH = (Math.atan2(dy,dx)*180/Math.PI+360)%360;
+  paintCW();
+}
+function cwPickSV(ev){
+  const sv = document.getElementById("cwSV");
+  if(!sv) return;
+  const rect = sv.getBoundingClientRect();
+  let x = (ev.clientX-rect.left)/rect.width;
+  let y = (ev.clientY-rect.top)/rect.height;
+  x = Math.max(0,Math.min(1,x));
+  y = Math.max(0,Math.min(1,y));
+  cwS = x; cwV = 1-y;
+  paintCW();
+}
+document.addEventListener("pointerdown",(e)=>{
+  const t = e.target;
+  if(t.closest && t.closest("#cwWheel")){ cwDrag="wheel"; cwPickWheel(e); e.preventDefault(); }
+  else if(t.closest && t.closest("#cwSV")){ cwDrag="sv"; cwPickSV(e); e.preventDefault(); }
+  else cwDrag = null;
+});
+document.addEventListener("pointermove",(e)=>{
+  if(!cwDrag) return;
+  if(cwDrag==="wheel") cwPickWheel(e);
+  else cwPickSV(e);
+});
+document.addEventListener("pointerup",()=>{ cwDrag = null; });
+
+function renderColorWheelBox(){
+  const favs = state.favColors || [];
+  const hexColor = currentCWColor();
+  const favHtml = favs.map(hex=>`
+    <button type="button" class="cw-fav-dot ${hex.toLowerCase()===hexColor.toLowerCase()?'active':''}" style="background:${hex}" data-fav="${hex}" title="Usar cor ${hex}" aria-label="Usar cor ${hex}">
+      <span class="x" data-fav-remove="${hex}" title="Remover favorita">×</span>
+    </button>`).join("");
+  return `
+  <div class="color-wheel">
+    <div class="cw-top">
+      <div class="cw-canvas-wrap">
+        <canvas id="cwWheel" width="${CW_SIZE}" height="${CW_SIZE}" title="Roda de cores — escolha o tom"></canvas>
+        <canvas id="cwSV" width="${CW_SIZE}" height="${CW_SV_H}" title="Ajuste saturação e brilho"></canvas>
+      </div>
+      <div>
+        <div class="cw-preview" id="cwPreview" style="background:${hexColor}"></div>
+        <span class="cw-hex mono" id="cwHex">${hexColor}</span>
+      </div>
+      <input type="hidden" id="groupCor" value="${hexColor}">
+    </div>
+    <div class="cw-favs">
+      <span class="cw-fav-label">Favoritas</span>
+      ${favHtml || '<span class="cw-fav-empty">Nenhuma cor favorita ainda.</span>'}
+      <button type="button" class="btn btn-ghost btn-sm" id="cwAddFav">+ Favoritar</button>
+      <span class="fav-count mono" id="cwFavCount">${favs.length}/8</span>
+    </div>
+    <div class="err" id="cwFavErr" role="alert" style="display:none;">Limite de 8 cores favoritas atingido.</div>
+  </div>`;
+}
+function bindColorWheelControls(){
+  const addFav = document.getElementById("cwAddFav");
+  if(addFav){
+    addFav.addEventListener("click", ()=>{
+      const hex = currentCWColor().toLowerCase();
+      const err = document.getElementById("cwFavErr");
+      if(!state.favColors) state.favColors = [];
+      if(state.favColors.includes(hex)){
+        err.textContent = "Essa cor já está nos favoritos.";
+        err.style.display = "block";
+        return;
+      }
+      if(state.favColors.length >= 8){
+        err.textContent = "Limite máximo de 8 cores favoritas atingido.";
+        err.style.display = "block";
+        return;
+      }
+      state.favColors.push(hex);
+      err.style.display = "none";
+      render();
+    });
+  }
+  document.querySelectorAll("[data-fav]").forEach(dot=>{
+    dot.addEventListener("click", ()=>{
+      setCWColor(dot.getAttribute("data-fav"));
+    });
+  });
+  document.querySelectorAll("[data-fav-remove]").forEach(x=>{
+    x.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const hex = x.getAttribute("data-fav-remove");
+      state.favColors = (state.favColors||[]).filter(c=>c!==hex);
+      render();
+    });
+  });
+  paintCW();
+}
+
+function renderAdminOverview(adm){
+  const companyEvents = state.events.filter(e=>e.companyId===adm.id);
+  const approved = approvedEmployeesOf(adm.id);
+  const groups = groupsOf(adm.id);
+  const today = fmtDateKey(new Date());
+  const todayCount = companyEvents.filter(e=>e.data===today).length;
+  const confirmed = companyEvents.reduce((s,ev)=>{ const c=ev.confirmations||{}; return s + Object.values(c).filter(v=>v==="confirmado").length; },0);
+  const upcoming = nextEvents(companyEvents, 6);
+  return `
+  <div class="welcome">
+    <h2>Olá, ${adm.nomeAdmin.split(" ")[0]}</h2>
+    <p>${adm.nomeEmpresa}${adm.bio ? " · " + adm.bio : ""}</p>
+  </div>
+  <div class="stat-grid">
+    ${stat("Eventos hoje", todayCount)}
+    ${stat("Presenças confirmadas", confirmed)}
+    ${stat("Funcionários na equipe", approved.length)}
+    ${stat("Grupos internos", groups.length)}
+  </div>
+  <div class="ov-grid">
+    <div class="panel">
+      <h3>Próximos eventos</h3>
+      ${upcoming.length===0 ? '<div class="empty">Sem eventos futuros no cronograma.</div>' : upcoming.map(renderMiniEvent).join("")}
+    </div>
+    <div class="panel">
+      <h3>Ações rápidas</h3>
+      <div class="quick-actions">
+        <button class="qa" type="button" data-nav="cronograma">${icon("plus")} Nova marcação</button>
+        <button class="qa" type="button" data-nav="equipe">${icon("users")} Equipe e solicitações</button>
+        <button class="qa" type="button" data-nav="funcionarios">${icon("search")} Buscar funcionário</button>
+        <button class="qa" type="button" data-nav="grupos">${icon("layers")} Grupos internos</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderAdminEquipe(adm){
+  const pending = pendingRequestsOf(adm.id);
+  const approved = approvedEmployeesOf(adm.id);
+  return `
+  <div class="view-grid">
+    <div class="panel">
+      <h3><span class="num">01</span>Solicitações pendentes <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${pending.length}</span></h3>
+      <div id="pendingList">
+        ${pending.length===0 ? '<div class="empty">Nenhuma solicitação no momento.</div>' :
+          pending.map(m=>{
+            const emp = state.employees.find(e=>e.id===m.employeeId);
+            return `
+              <div class="emp-item">
+                <div class="who">
+                  <b>${emp.nome}</b>
+                  <span>${emp.cidade} · <span class="mono">${emp.cpf}</span></span>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-teal btn-sm" data-approve="${m.id}">Aprovar</button>
+                  <button class="del-btn" data-reject="${m.id}">recusar</button>
+                </div>
+              </div>`;
+          }).join("")
+        }
+      </div>
+    </div>
+    <div class="panel">
+      <h3><span class="num">02</span>Equipe aprovada <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${approved.length}</span></h3>
+      <div id="approvedList">
+        ${approved.length===0 ? '<div class="empty">Ninguém aprovado ainda.</div>' :
+          approved.map(emp=>`
+            <div class="emp-item">
+              <div class="who">
+                <b>${emp.nome}</b>
+                <span>${emp.cidade} · <span class="mono">${emp.cpf}</span></span>
+              </div>
+              <button class="del-btn" data-revoke="${emp.id}">remover</button>
+            </div>
+          `).join("")
+        }
+      </div>
+    </div>
+  </div>`;
+}
+function renderAdminFuncionarios(adm){
+  const empSearchTerm = state.employeeSearch.trim().toLowerCase();
+  const filteredEmployees = state.employees.filter(e =>
+    !empSearchTerm || e.nome.toLowerCase().includes(empSearchTerm)
+  );
+  return `
+  <div class="panel">
+    <h3><span class="num">01</span>Buscar funcionário</h3>
+    <p class="hint">Encontre alguém já cadastrado no sistema pelo nome e convide para o seu grupo.</p>
+    <input type="text" id="employeeSearchInput" placeholder="Digite o nome do funcionário..." value="${state.employeeSearch}">
+    <div style="margin-top:14px;" id="employeeSearchResults">
+      ${filteredEmployees.length===0 ? '<div class="empty">Nenhum funcionário encontrado.</div>' :
+        filteredEmployees.map(emp=>{
+          const m = membershipOf(emp.id, adm.id);
+          let btnHtml;
+          if(!m) btnHtml = `<button class="btn btn-amber btn-sm" data-invite="${emp.id}">Convidar</button>`;
+          else if(m.status==="pending" && m.initiatedBy==="admin") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Convite enviado</button>`;
+          else if(m.status==="pending" && m.initiatedBy==="employee") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Aguardando sua aprovação acima</button>`;
+          else btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Já está na equipe</button>`;
+          return `
+            <div class="company-card">
+              <div class="info">
+                <b>${emp.nome}</b>
+                <span>${emp.cidade} · <span class="mono">${emp.cpf}</span></span>
+              </div>
+              ${btnHtml}
+            </div>`;
+        }).join("")
+      }
+    </div>
+  </div>`;
+}
+function renderAdminGrupos(adm){
+  const groups = groupsOf(adm.id);
+  const approved = approvedEmployeesOf(adm.id);
+  return `
+  <div class="view-grid">
+    <div class="panel">
+      <h3><span class="num">01</span>Grupos internos <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${groups.length}</span></h3>
+      <div id="groupList">
+        ${groups.length===0 ? '<div class="empty">Nenhum grupo criado ainda.</div>' :
+          groups.map(g=>`
+            <div class="emp-item">
+              <div class="who">
+                <b><span class="cal-dot" style="display:inline-block;background:${g.cor};margin-right:6px;"></span>${g.nome}</b>
+                <span>${g.membros.length} membro(s)</span>
+              </div>
+              <button class="del-btn" data-delete-group="${g.id}">excluir</button>
+            </div>
+          `).join("")
+        }
+      </div>
+    </div>
+    <div class="panel">
+      <h3><span class="num">02</span>Criar grupo</h3>
+      <label>Nome do grupo</label>
+      <input type="text" id="groupNome" placeholder="Ex: Financeiro">
+      <label>Cor do grupo</label>
+      ${renderColorWheelBox()}
+      <label>Membros</label>
+      ${approved.length===0
+        ? '<p class="hint">Aprove funcionários antes de montar um grupo.</p>'
+        : `<div style="max-height:150px;overflow-y:auto;border:1px solid var(--line);border-radius:7px;padding:8px 10px;">
+            ${approved.map(e=>`
+              <label style="display:flex;align-items:center;gap:8px;font-weight:400;margin:6px 0;">
+                <input type="checkbox" value="${e.id}" class="groupMemberCheck" style="width:auto;"> ${e.nome}
+              </label>`).join("")}
+          </div>`
+      }
+      <div class="err" id="groupErr">Dê um nome ao grupo e selecione ao menos um membro.</div>
+      <button class="btn btn-primary" id="addGroupBtn">Criar grupo</button>
+    </div>
+  </div>`;
+}
+function renderAdminCronograma(adm){
+  const companyEvents = state.events.filter(e=>e.companyId===adm.id);
+  const approved = approvedEmployeesOf(adm.id);
+  const groups = groupsOf(adm.id);
+  return `
+  <div class="view-grid">
+    <div class="panel">
+      <h3><span class="num">+</span>Nova marcação</h3>
+      <label>Título do evento</label>
+      <input type="text" id="evTitulo" placeholder="Ex: Reunião de alinhamento">
+      <div style="display:flex; gap:12px;">
+        <div style="flex:1;">
+          <label>Data</label>
+          <input type="date" id="evData">
+        </div>
+        <div style="flex:1;">
+          <label>Horário</label>
+          <input type="time" id="evHora">
+        </div>
+      </div>
+      <label>Local (opcional)</label>
+      <input type="text" id="evLocal" placeholder="Ex: Sala de reuniões / online">
+      <label>Prioridade</label>
+      <select id="evPrioridade">
+        <option value="baixa">Baixa</option>
+        <option value="media" selected>Média</option>
+        <option value="alta">Alta</option>
+      </select>
+      <label>Descrição</label>
+      <textarea id="evDesc" placeholder="Detalhes do evento (opcional)"></textarea>
+
+      <label>Destinatário</label>
+      <div class="radio-row">
+        <label><input type="radio" name="destino" value="todos" checked> Todo o grupo</label>
+        <label><input type="radio" name="destino" value="grupo"> Grupo interno</label>
+        <label><input type="radio" name="destino" value="individual"> Funcionário específico</label>
+      </div>
+      <div id="grupoBlock" style="display:none;">
+        <label>Selecione o grupo</label>
+        <select id="evGrupoSelect">
+          <option value="" disabled selected>Selecione um grupo</option>
+          ${groups.map(g=>`<option value="${g.id}">${g.nome} (${g.membros.length} membros)</option>`).join("")}
+        </select>
+        ${groups.length===0 ? '<p class="hint">Crie um grupo interno antes de usar essa opção.</p>' : ""}
+      </div>
+      <div id="individualBlock" style="display:none;">
+        <label>Nome completo do funcionário</label>
+        <select id="evEmpSelect">
+          <option value="" disabled selected>Selecione um funcionário aprovado</option>
+          ${approved.map(e=>`<option value="${e.id}">${e.nome} — ${e.cidade}</option>`).join("")}
+        </select>
+        <p class="hint">Somente funcionários já aprovados no seu grupo podem ser selecionados.</p>
+      </div>
+      <div class="err" id="evErr">Preencha título, data, horário e destinatário.</div>
+      <button class="btn btn-primary" id="addEventBtn">Marcar evento</button>
+    </div>
+    <div class="panel">
+      <h3><span class="num">01</span>Cronograma visual</h3>
+      ${renderCalendarBlock(companyEvents, adm.nomeEmpresa)}
+    </div>
+  </div>`;
+}
+function renderAdminDashboard(adm){
+  const active = state.adminView || "cronograma";
+  const views = {
+    dashboard: ()=>renderAdminOverview(adm),
+    cronograma: ()=>renderAdminCronograma(adm),
+    equipe: ()=>renderAdminEquipe(adm),
+    funcionarios: ()=>renderAdminFuncionarios(adm),
+    grupos: ()=>renderAdminGrupos(adm),
+  };
+  const titles = {
+    dashboard: ["Dashboard","Visão geral do cronograma"],
+    cronograma: ["Cronograma","Marcaçõos e agenda da equipe"],
+    equipe: ["Equipe","Solicitações e membros aprovados"],
+    funcionarios: ["Funcionários","Busque e convide funcionários cadastrados"],
+    grupos: ["Grupos","Organize sua equipe em grupos internos"],
+  };
+  const body = (views[active]||views.cronograma)();
+  const t = titles[active]||titles.cronograma;
+  const action = active!=="cronograma" ? `<button class="btn btn-primary btn-header" type="button" data-nav="cronograma">${icon("plus")} Nova marcação</button>` : "";
+  return renderShell("admin", ADMIN_NAV, t[0], t[1], body, action);
+}
+
+function bindAdminDashboardEvents(adm){
+  document.getElementById("pendingList").addEventListener("click",(e)=>{
+    const apBtn = e.target.closest("[data-approve]");
+    const rjBtn = e.target.closest("[data-reject]");
+    if(apBtn){
+      const m = state.memberships.find(x=>x.id===apBtn.getAttribute("data-approve"));
+      if(m) m.status = "approved";
+      render();
+    }
+    if(rjBtn){
+      const id = rjBtn.getAttribute("data-reject");
+      state.memberships = state.memberships.filter(x=>x.id!==id);
+      render();
+    }
+  });
+
+  const empSearchInput = document.getElementById("employeeSearchInput");
+  if(empSearchInput){
+    empSearchInput.addEventListener("input", ()=>{
+      state.employeeSearch = empSearchInput.value;
+      render();
+      const el = document.getElementById("employeeSearchInput");
+      if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    });
+  }
+  const empSearchResults = document.getElementById("employeeSearchResults");
+  if(empSearchResults){
+    empSearchResults.addEventListener("click",(e)=>{
+      const btn = e.target.closest("[data-invite]");
+      if(!btn) return;
+      const employeeId = btn.getAttribute("data-invite");
+      state.memberships.push({ id: uid(), employeeId, companyId: adm.id, status: "pending", initiatedBy: "admin" });
+      render();
+    });
+  }
+
+  document.getElementById("approvedList").addEventListener("click",(e)=>{
+    const btn = e.target.closest("[data-revoke]");
+    if(!btn) return;
+    const empId = btn.getAttribute("data-revoke");
+    state.memberships = state.memberships.filter(m => !(m.employeeId===empId && m.companyId===adm.id));
+    state.events = state.events.filter(ev => !(ev.companyId===adm.id && ev.destinoTipo==="individual" && ev.destinoId===empId));
+    state.groups.forEach(g => { if(g.companyId===adm.id) g.membros = g.membros.filter(id=>id!==empId); });
+    render();
+  });
+
+  const groupList = document.getElementById("groupList");
+  if(groupList){
+    groupList.addEventListener("click",(e)=>{
+      const btn = e.target.closest("[data-delete-group]");
+      if(!btn) return;
+      const groupId = btn.getAttribute("data-delete-group");
+      state.groups = state.groups.filter(g=>g.id!==groupId);
+      state.events = state.events.filter(ev => !(ev.destinoTipo==="grupo" && ev.destinoId===groupId));
+      render();
+    });
+  }
+  const addGroupBtn = document.getElementById("addGroupBtn");
+  if(addGroupBtn){
+    addGroupBtn.addEventListener("click", ()=>{
+      const nome = document.getElementById("groupNome").value.trim();
+      const cor = document.getElementById("groupCor").value;
+      const membros = Array.from(document.querySelectorAll(".groupMemberCheck:checked")).map(c=>c.value);
+      const errBox = document.getElementById("groupErr");
+      if(!nome || membros.length===0){
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+      state.groups.push({ id: uid(), companyId: adm.id, nome, cor, membros });
+      render();
+    });
+  }
+
+  document.querySelectorAll('input[name="destino"]').forEach(r=>{
+    r.addEventListener("change", (e)=>{
+      document.getElementById("individualBlock").style.display = e.target.value === "individual" ? "block" : "none";
+      document.getElementById("grupoBlock").style.display = e.target.value === "grupo" ? "block" : "none";
+    });
+  });
+
+  document.getElementById("addEventBtn").addEventListener("click", ()=>{
+    const titulo = document.getElementById("evTitulo").value.trim();
+    const data = document.getElementById("evData").value;
+    const hora = document.getElementById("evHora").value;
+    const local = document.getElementById("evLocal").value.trim();
+    const prioridade = document.getElementById("evPrioridade").value;
+    const desc = document.getElementById("evDesc").value.trim();
+    const destinoTipo = document.querySelector('input[name="destino"]:checked').value;
+    const empId = document.getElementById("evEmpSelect")?.value;
+    const grupoId = document.getElementById("evGrupoSelect")?.value;
+    const errBox = document.getElementById("evErr");
+
+    const destinoValido =
+      destinoTipo === "todos" ||
+      (destinoTipo === "individual" && empId) ||
+      (destinoTipo === "grupo" && grupoId);
+
+    if(!titulo || !data || !hora || !destinoValido){
+      errBox.style.display = "block";
+      return;
+    }
+    errBox.style.display = "none";
+    state.events.push({
+      id: uid(), companyId: adm.id, titulo, data, hora, local, prioridade, descricao: desc,
+      destinoTipo,
+      destinoId: destinoTipo === "individual" ? empId : (destinoTipo === "grupo" ? grupoId : null),
+      confirmations: {}
+    });
+    state.selectedDay = data;
+    render();
+  });
+
+  bindColorWheelControls();
+  bindCalendarNav();
+  bindEventRemoval();
+}
+
+/* =========================================================
+   TELA: AUTENTICAÇÃO DO FUNCIONÁRIO (login + cadastro)
+   ========================================================= */
+function renderEmployeeAuthGate(){
+  const tab = state.employeeAuthTab;
+  return `
+  <div class="login-box">
+    <div class="panel">
+      <div class="tab-row">
+        <button class="btn ${tab==='login'?'btn-primary':'btn-ghost'}" data-emp-auth-tab="login">Já sou cadastrado</button>
+        <button class="btn ${tab==='register'?'btn-primary':'btn-ghost'}" data-emp-auth-tab="register">Fazer meu cadastro</button>
+      </div>
+      ${tab==="login" ? renderEmployeeLoginForm() : renderEmployeeRegisterForm()}
+    </div>
+  </div>`;
+}
+function renderEmployeeLoginForm(){
+  return `
+    <div class="auth-head">
+      <div class="eyebrow">Acesso do funcionário</div>
+      <h3>Entrar na minha conta</h3>
+      <p>Use o Gmail e a senha que você cadastrou.</p>
+    </div>
+    <label>E-mail (Gmail)</label>
+    <input type="email" id="empLoginEmail" placeholder="voce@gmail.com">
+    <label>Senha</label>
+    <input type="password" id="empLoginSenha" placeholder="••••••••">
+    <div class="err" id="empLoginErr">E-mail ou senha incorretos. Faça seu cadastro na outra aba se ainda não tem conta.</div>
+    <button class="btn btn-primary" id="empLoginBtn">Entrar na minha conta</button>
+  `;
+}
+function renderEmployeeRegisterForm(){
+  return `
+    <div class="auth-head">
+      <div class="eyebrow">Novo cadastro</div>
+      <h3>Meu cadastro</h3>
+      <p>Entre com seu Gmail e senha. Foto e descrição são opcionais.</p>
+    </div>
+
+    <div class="avatar-row">
+      <label class="avatar-upload" for="regFotoFile">
+        <img id="regFotoPreview" alt="Foto de perfil">
+        <span class="ph" id="regFotoPlaceholder">🙂</span>
+        <input type="file" id="regFotoFile" accept="image/*">
+      </label>
+      <div class="avatar-meta">
+        <b>Foto de perfil</b>
+        <span>Opcional · como a equipe vai te reconhecer</span>
+        <button type="button" class="avatar-remove" id="regFotoRemove">remover foto</button>
+      </div>
+    </div>
+
+    <label>Nome completo</label>
+    <input type="text" id="regNome" placeholder="Ex: Maria Aparecida Souza">
+    <label>E-mail (Gmail)</label>
+    <input type="email" id="regEmail" placeholder="voce@gmail.com">
+    <label>Telefone</label>
+    <input type="text" id="regTelefone" class="mono" placeholder="(00) 00000-0000" maxlength="15">
+    <div class="field-row">
+      <div>
+        <label>Senha</label>
+        <input type="password" id="regSenha" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div>
+        <label>Confirmar senha</label>
+        <input type="password" id="regSenha2" placeholder="Repita a senha">
+      </div>
+    </div>
+    <label>CPF</label>
+    <input type="text" id="regCPF" class="mono" placeholder="000.000.000-00" maxlength="14">
+    <label>Cidade (Santa Catarina)</label>
+    <select id="regCidade">
+      <option value="" disabled selected>Selecione a cidade</option>
+      ${SC_CITIES.map(c=>`<option value="${c}">${c}</option>`).join("")}
+    </select>
+    <label>Breve descrição <span class="hint" style="display:inline;margin:0;">(opcional)</span></label>
+    <textarea id="regBio" placeholder="Ex: Auxiliar administrativo, turno da manhã."></textarea>
+    <div class="err" id="regErr">Confira os dados: nome, Gmail válido, telefone, senha (mín. 6 caracteres, iguais), cidade e CPF válido.</div>
+    <button class="btn btn-primary" id="registerBtn">Cadastrar e entrar</button>
+  `;
+}
+function bindEmployeeAuthEvents(){
+  document.querySelectorAll("[data-emp-auth-tab]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ state.employeeAuthTab = btn.getAttribute("data-emp-auth-tab"); render(); });
+  });
+
+  const loginBtn = document.getElementById("empLoginBtn");
+  if(loginBtn){
+    loginBtn.addEventListener("click", ()=>{
+      const email = document.getElementById("empLoginEmail").value.trim().toLowerCase();
+      const senha = document.getElementById("empLoginSenha").value;
+      const errBox = document.getElementById("empLoginErr");
+      const emp = state.employees.find(e => (e.email||"").toLowerCase()===email && e.senha===senha);
+      if(emp){
+        state.session = { type:"funcionario", employeeId: emp.id };
+        state.selectedDay = null;
+        state.employeeActiveCompanyId = null;
+        render();
+      } else {
+        errBox.style.display = "block";
+      }
+    });
+  }
+
+  let regFotoDataUrl = null;
+  bindAvatarUpload("regFotoFile","regFotoPreview","regFotoPlaceholder","regFotoRemove",(dataUrl)=>{ regFotoDataUrl = dataUrl; });
+
+  const regTelefone = document.getElementById("regTelefone");
+  if(regTelefone){
+    regTelefone.addEventListener("input", ()=>{ regTelefone.value = maskPhoneBR(regTelefone.value); });
+  }
+
+  const regCpf = document.getElementById("regCPF");
+  if(regCpf){
+    regCpf.addEventListener("input", ()=>{ regCpf.value = maskCPF(regCpf.value); });
+    document.getElementById("registerBtn").addEventListener("click", ()=>{
+      const nome = document.getElementById("regNome").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const telefone = document.getElementById("regTelefone").value.trim();
+      const senha = document.getElementById("regSenha").value;
+      const senha2 = document.getElementById("regSenha2").value;
+      const cpf = regCpf.value.trim();
+      const cidade = document.getElementById("regCidade").value;
+      const bio = document.getElementById("regBio").value.trim();
+      const errBox = document.getElementById("regErr");
+      const cpfDigits = cpf.replace(/\D/g,"");
+
+      let msg = "";
+      if(!nome) msg = "Informe seu nome completo.";
+      else if(!isValidGmail(email)) msg = "Informe um e-mail Gmail válido (ex: voce@gmail.com).";
+      else if(state.employees.some(e=>(e.email||"").toLowerCase()===email.toLowerCase())) msg = "Já existe uma conta com esse e-mail. Use a aba \"Já sou cadastrado\".";
+      else if(!isValidPhoneBR(telefone)) msg = "Informe um telefone válido, com DDD.";
+      else if(senha.length < 6) msg = "A senha precisa ter pelo menos 6 caracteres.";
+      else if(senha !== senha2) msg = "As senhas não são iguais.";
+      else if(!cidade) msg = "Selecione sua cidade.";
+      else if(cpfDigits.length !== 11) msg = "O CPF precisa ter 11 dígitos.";
+      else if(!isPlausibleCPF(cpf)) msg = "Esse CPF não é válido.";
+      else if(state.employees.some(e=>e.cpf===cpf)) msg = "Esse CPF já está cadastrado. Use a aba \"Já sou cadastrado\".";
+
+      if(msg){
+        errBox.textContent = msg;
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+      const novoFuncionario = { id: uid(), nome, cpf, cidade, email, senha, telefone, bio, fotoUrl: regFotoDataUrl };
+      state.employees.push(novoFuncionario);
+      state.session = { type:"funcionario", employeeId: novoFuncionario.id };
+      state.selectedDay = null;
+      render();
+    });
+  }
+}
+
+/* =========================================================
+   TELA: PAINEL DO FUNCIONÁRIO
+   ========================================================= */
+function renderEmployeeDashboard(emp){
+  const myMemberships = state.memberships.filter(m=>m.employeeId===emp.id && (m.status==="approved" || m.initiatedBy==="employee"));
+  const myInvites = invitesReceivedBy(emp.id);
+  const approvedCompanies = approvedCompaniesOf(emp.id);
+
+  if(!state.employeeActiveCompanyId && approvedCompanies.length>0){
+    state.employeeActiveCompanyId = approvedCompanies[0].id;
+  }
+
+  const searchTerm = state.companySearch.trim().toLowerCase();
+  const filteredCompanies = state.admins.filter(a =>
+    !searchTerm || a.nomeEmpresa.toLowerCase().includes(searchTerm)
+  );
+
+  const activeCompany = state.admins.find(a=>a.id===state.employeeActiveCompanyId);
+  const calendarEvents = activeCompany
+    ? eventsVisibleToEmployeeInCompany(emp.id, activeCompany.id)
+    : [];
+
+  const empAvatarHtml = emp.fotoUrl
+    ? `<img class="avatar-thumb" src="${emp.fotoUrl}" alt="">`
+    : `<span class="avatar-fallback">${initials(emp.nome)}</span>`;
+
+  return `
+  <div class="dash-head">
+    <div class="who">
+      ${empAvatarHtml}
+      <div>
+        <h2>Olá, ${emp.nome.split(" ")[0]}</h2>
+        <p>${emp.cidade}${emp.bio ? " · " + emp.bio : ""}</p>
+      </div>
+    </div>
+    <div class="contact">
+      <span>${emp.email || ""}</span>
+      ${emp.telefone ? `<span>${emp.telefone}</span>` : ""}
+    </div>
+  </div>
+  <div class="layout" style="grid-template-columns:340px 1fr;">
+    <div>
+      <div class="panel">
+        <h3><span class="num">01</span>Minhas empresas</h3>
+        ${myMemberships.length===0 ? '<div class="empty">Você ainda não solicitou entrada em nenhuma empresa.</div>' :
+          myMemberships.map(m=>{
+            const company = state.admins.find(a=>a.id===m.companyId);
+            if(!company) return "";
+            return `
+              <div class="company-card">
+                <div class="info">
+                  <b>${company.nomeEmpresa}</b>
+                  <span>Responsável: ${company.nomeAdmin}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="badge ${m.status==='approved'?'badge-approved':'badge-pending'}">
+                    ${m.status==='approved' ? 'Aprovado' : 'Aguardando aprovação'}
+                  </span>
+                  ${m.status==='approved' ? `<button class="del-btn" data-leave-company="${company.id}">sair</button>` : ""}
+                </div>
+              </div>`;
+          }).join("")
+        }
+      </div>
+
+      <div class="panel">
+        <h3><span class="num">02</span>Convites recebidos <span class="mono" style="margin-left:auto;color:var(--slate);font-weight:400;">${myInvites.length}</span></h3>
+        <p class="hint">Empresas que te encontraram pelo nome e convidaram você para o grupo.</p>
+        <div id="invitesList">
+          ${myInvites.length===0 ? '<div class="empty">Nenhum convite no momento.</div>' :
+            myInvites.map(m=>{
+              const company = state.admins.find(a=>a.id===m.companyId);
+              if(!company) return "";
+              return `
+                <div class="emp-item">
+                  <div class="who">
+                    <b>${company.nomeEmpresa}</b>
+                    <span>Convite de ${company.nomeAdmin}</span>
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-teal btn-sm" data-accept-invite="${m.id}">Aceitar</button>
+                    <button class="del-btn" data-decline-invite="${m.id}">recusar</button>
+                  </div>
+                </div>`;
+            }).join("")
+          }
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3><span class="num">03</span>Buscar empresa</h3>
+        <input type="text" id="companySearchInput" placeholder="Digite o nome da empresa..." value="${state.companySearch}">
+        <div style="margin-top:14px;" id="companyResults">
+          ${filteredCompanies.length===0 ? '<div class="empty">Nenhuma empresa encontrada.</div>' :
+            filteredCompanies.map(c=>{
+              const m = membershipOf(emp.id, c.id);
+              let btnHtml;
+              if(!m) btnHtml = `<button class="btn btn-amber btn-sm" data-request="${c.id}">Solicitar entrada</button>`;
+              else if(m.status==="pending" && m.initiatedBy==="employee") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Solicitação enviada</button>`;
+              else if(m.status==="pending" && m.initiatedBy==="admin") btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Convite recebido acima</button>`;
+              else btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Você já faz parte</button>`;
+              return `
+                <div class="company-card">
+                  <div class="info">
+                    <b>${c.nomeEmpresa}</b>
+                    <span>Responsável: ${c.nomeAdmin}</span>
+                  </div>
+                  ${btnHtml}
+                </div>`;
+            }).join("")
+          }
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3><span class="num">04</span>Minha agenda</h3>
+        ${approvedCompanies.length===0 ? `
+          <p class="hint">Assim que uma empresa aprovar sua solicitação, o cronograma dela aparece aqui.</p>
+        ` : `
+          <div class="company-tabs">
+            ${approvedCompanies.map(c=>`
+              <button data-cal-company="${c.id}" class="${c.id===state.employeeActiveCompanyId?'active':''}">${c.nomeEmpresa}</button>
+            `).join("")}
+          </div>
+          ${renderCalendarBlock(calendarEvents, activeCompany ? activeCompany.nomeEmpresa : "")}
+        `}
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindEmployeeDashboardEvents(emp){
+  document.querySelectorAll("[data-leave-company]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const companyId = btn.getAttribute("data-leave-company");
+      state.memberships = state.memberships.filter(m => !(m.employeeId===emp.id && m.companyId===companyId));
+      state.groups.forEach(g => { if(g.companyId===companyId) g.membros = g.membros.filter(id=>id!==emp.id); });
+      if(state.employeeActiveCompanyId===companyId) state.employeeActiveCompanyId = null;
+      render();
+    });
+  });
+
+  const searchInput = document.getElementById("companySearchInput");
+  if(searchInput){
+    searchInput.addEventListener("input", ()=>{
+      state.companySearch = searchInput.value;
+      render();
+      // devolve o foco e o cursor para o fim do campo após o re-render
+      const el = document.getElementById("companySearchInput");
+      if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    });
+  }
+
+  const resultsBox = document.getElementById("companyResults");
+  if(resultsBox){
+    resultsBox.addEventListener("click",(e)=>{
+      const btn = e.target.closest("[data-request]");
+      if(!btn) return;
+      const companyId = btn.getAttribute("data-request");
+      state.memberships.push({ id: uid(), employeeId: emp.id, companyId, status: "pending", initiatedBy: "employee" });
+      render();
+    });
+  }
+
+  const invitesBox = document.getElementById("invitesList");
+  if(invitesBox){
+    invitesBox.addEventListener("click",(e)=>{
+      const acceptBtn = e.target.closest("[data-accept-invite]");
+      const declineBtn = e.target.closest("[data-decline-invite]");
+      if(acceptBtn){
+        const m = state.memberships.find(x=>x.id===acceptBtn.getAttribute("data-accept-invite"));
+        if(m) m.status = "approved";
+        render();
+      }
+      if(declineBtn){
+        const id = declineBtn.getAttribute("data-decline-invite");
+        state.memberships = state.memberships.filter(x=>x.id!==id);
+        render();
+      }
+    });
+  }
+
+  document.querySelectorAll("[data-cal-company]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      state.employeeActiveCompanyId = btn.getAttribute("data-cal-company");
+      state.selectedDay = null;
+      render();
+    });
+  });
+
+  bindCalendarNav();
+  bindEventRemoval();
+}
+
+/* =========================================================
+   CALENDÁRIO (compartilhado)
+   ========================================================= */
+function renderCalendarBlock(eventList, title){
+  const year = state.calDate.getFullYear();
+  const month = state.calDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startWeekday = firstDay.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayKey = fmtDateKey(new Date());
+
+  let cells = "";
+  for(let i=0;i<startWeekday;i++) cells += `<div class="cal-day muted"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const dateObj = new Date(year, month, d);
+    const key = fmtDateKey(dateObj);
+    const dayEvents = eventsForDay(eventList, key);
+    const hasAll = dayEvents.some(e=>e.destinoTipo==="todos");
+    const hasGrupo = dayEvents.some(e=>e.destinoTipo==="grupo");
+    const hasOne = dayEvents.some(e=>e.destinoTipo==="individual");
+    const classes = ["cal-day"];
+    if(key===todayKey) classes.push("today");
+    if(key===state.selectedDay) classes.push("selected");
+    cells += `
+      <div class="${classes.join(' ')}" data-day="${key}">
+        <span class="num">${String(d).padStart(2,"0")}</span>
+        <div class="cal-dots">
+          ${hasAll?'<span class="cal-dot dot-all"></span>':''}
+          ${hasGrupo?'<span class="cal-dot dot-group"></span>':''}
+          ${hasOne?'<span class="cal-dot dot-one"></span>':''}
+        </div>
+      </div>`;
+  }
+
+  const selKey = state.selectedDay;
+  const selEvents = selKey ? eventsForDay(eventList, selKey) : [];
+
+  return `
+    <div class="cal-head">
+      <h3>${title} — ${MONTHS_PT[month]} ${year}</h3>
+      <div class="cal-nav">
+        <button data-cal-nav="-1">‹</button>
+        <button data-cal-nav="1">›</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      ${DOW_PT.map(d=>`<div class="cal-dow">${d}</div>`).join("")}
+      ${cells}
+    </div>
+    <div class="legend">
+      <span><span class="cal-dot dot-all"></span> Todo o grupo</span>
+      <span><span class="cal-dot dot-group"></span> Grupo interno</span>
+      <span><span class="cal-dot dot-one"></span> Individual</span>
+    </div>
+
+    <div class="agenda-title">${selKey ? "Eventos em " + fmtDatePretty(selKey) : "Selecione um dia para ver os detalhes"}</div>
+    <div id="dayAgenda">
+      ${selKey && selEvents.length===0 ? '<div class="empty">Nenhum evento nesta data.</div>' : ""}
+      ${selEvents.map(ev => renderEventCard(ev)).join("")}
+    </div>
+  `;
+}
+
+const PRIORIDADE_LABEL = { baixa:"Baixa prioridade", media:"Prioridade média", alta:"Alta prioridade" };
+
+function renderEventCard(ev){
+  let targetLabel, cardClass;
+  if(ev.destinoTipo==="individual"){
+    targetLabel = "Individual · " + (state.employees.find(e=>e.id===ev.destinoId)?.nome || "Funcionário removido");
+    cardClass = "individual";
+  } else if(ev.destinoTipo==="grupo"){
+    const g = state.groups.find(x=>x.id===ev.destinoId);
+    targetLabel = "Grupo · " + (g ? g.nome : "Grupo removido");
+    cardClass = "group";
+  } else {
+    targetLabel = "Grupo inteiro";
+    cardClass = "";
+  }
+
+  const showRemove = state.role === "admin";
+  const viewerEmployee = state.role === "funcionario" ? currentEmployee() : null;
+
+  let rsvpHtml = "";
+  if(viewerEmployee){
+    const myStatus = (ev.confirmations || {})[viewerEmployee.id] || null;
+    rsvpHtml = `
+      <div class="rsvp-row">
+        <button class="btn btn-sm ${myStatus==='confirmado'?'btn-teal':'btn-ghost'}" data-confirm="${ev.id}">Confirmar presença</button>
+        <button class="btn btn-sm ${myStatus==='recusado'?'btn-rose':'btn-ghost'}" data-decline="${ev.id}">Não vou</button>
+        ${myStatus ? `<span class="badge ${myStatus==='confirmado'?'badge-approved':'badge-pending'}">${myStatus==='confirmado'?'Você confirmou':'Você recusou'}</span>` : ""}
+      </div>`;
+  } else if(showRemove){
+    const confirmations = ev.confirmations || {};
+    const confirmedCount = Object.values(confirmations).filter(v=>v==="confirmado").length;
+    const declinedCount = Object.values(confirmations).filter(v=>v==="recusado").length;
+    const audience = audienceCountFor(ev);
+    const pendingCount = Math.max(audience - confirmedCount - declinedCount, 0);
+    rsvpHtml = `<div class="rsvp-summary mono">Presença: ${confirmedCount} confirmado(s) · ${declinedCount} recusado(s) · ${pendingCount} pendente(s)</div>`;
+  }
+
+  return `
+    <div class="event-card ${cardClass}">
+      <div class="row">
+        <h4>${ev.titulo}</h4>
+        <span class="time mono">${ev.hora}</span>
+      </div>
+      ${ev.local ? `<p class="mono" style="color:var(--teal-dark);margin-top:4px;">${ev.local}</p>` : ""}
+      ${ev.descricao ? `<p>${ev.descricao}</p>` : ""}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+        <span class="target">${targetLabel}</span>
+        ${ev.prioridade ? `<span class="target prio-${ev.prioridade}">${PRIORIDADE_LABEL[ev.prioridade]}</span>` : ""}
+      </div>
+      ${rsvpHtml}
+      ${showRemove ? `<div><button class="rm" data-remove-event="${ev.id}">remover evento</button></div>` : ""}
+    </div>
+  `;
+}
+
+function bindCalendarNav(){
+  document.querySelectorAll("[data-cal-nav]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const delta = parseInt(btn.getAttribute("data-cal-nav"));
+      state.calDate.setMonth(state.calDate.getMonth() + delta);
+      render();
+    });
+  });
+  document.querySelectorAll("[data-day]").forEach(cell=>{
+    cell.addEventListener("click", ()=>{
+      const key = cell.getAttribute("data-day");
+      state.selectedDay = state.selectedDay === key ? null : key;
+      render();
+    });
+  });
+}
+
+function bindEventRemoval(){
+  const agenda = document.getElementById("dayAgenda");
+  if(!agenda) return;
+  agenda.addEventListener("click",(e)=>{
+    const rmBtn = e.target.closest("[data-remove-event]");
+    if(rmBtn){
+      const id = rmBtn.getAttribute("data-remove-event");
+      state.events = state.events.filter(ev=>ev.id!==id);
+      render();
+      return;
+    }
+    const confirmBtn = e.target.closest("[data-confirm]");
+    if(confirmBtn){
+      const ev = state.events.find(x=>x.id===confirmBtn.getAttribute("data-confirm"));
+      const emp = currentEmployee();
+      if(ev && emp){
+        ev.confirmations = ev.confirmations || {};
+        ev.confirmations[emp.id] = "confirmado";
+      }
+      render();
+      return;
+    }
+    const declineBtn = e.target.closest("[data-decline]");
+    if(declineBtn){
+      const ev = state.events.find(x=>x.id===declineBtn.getAttribute("data-decline"));
+      const emp = currentEmployee();
+      if(ev && emp){
+        ev.confirmations = ev.confirmations || {};
+        ev.confirmations[emp.id] = "recusado";
+      }
+      render();
+      return;
+    }
+  });
+}
+
+loadTheme();
+syncThemeUI();
+bindThemeToggle();
+render();
+</script>
+</body>
+</html>
