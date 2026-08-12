@@ -1,12 +1,11 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cronograma — Gestão inteligente de equipes</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     /* ========== VARIÁVEIS E RESET ========== */
     :root {
@@ -650,21 +649,13 @@ function maskCPF(v) {
   return v;
 }
 
+// ════════════════════════════════════════════════════════════════
+// VALIDAÇÃO DE CPF EXTREMAMENTE RELAXADA:
+// Aceita QUALQUER SEQUÊNCIA de 11 dígitos (após remover máscara)
+// ════════════════════════════════════════════════════════════════
 function validarCPF(raw) {
   const cpf = raw.replace(/\D/g, "");
-  if (cpf.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(cpf)) return false;
-  let soma = 0, resto;
-  for (let i = 1; i <= 9; i++) soma += parseInt(cpf[i-1]) * (11 - i);
-  resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf[9])) return false;
-  soma = 0;
-  for (let i = 1; i <= 10; i++) soma += parseInt(cpf[i-1]) * (12 - i);
-  resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf[10])) return false;
-  return true;
+  return cpf.length === 11;  // apenas verifica se tem 11 dígitos
 }
 
 function isValidGmail(email) { return /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email.trim()); }
@@ -868,8 +859,8 @@ document.getElementById('changePasswordBtn').addEventListener('click', () => {
     const adm = state.admins.find(a => a.id === user.id);
     if (adm) { adm.senha = newPass; scheduleSave(); msg.textContent = '✅ Senha alterada!'; msg.style.color = 'var(--green-dark)'; }
   } else {
-    msg.textContent = '✅ Funcionários usam CPF como autenticação.';
-    msg.style.color = 'var(--green-dark)';
+    const emp = state.employees.find(e => e.id === user.id);
+    if (emp) { emp.senha = newPass; scheduleSave(); msg.textContent = '✅ Senha alterada!'; msg.style.color = 'var(--green-dark)'; }
   }
   document.getElementById('newPassword').value = '';
   document.getElementById('confirmNewPassword').value = '';
@@ -1819,7 +1810,7 @@ function updateSelCount() {
 }
 
 /* =========================================================
-   AUTENTICAÇÃO FUNCIONÁRIO
+   AUTENTICAÇÃO FUNCIONÁRIO — CPF RELAXADO + SENHA
    ========================================================= */
 function renderEmployeeAuthGate() {
   const tab = state.employeeAuthTab;
@@ -1834,15 +1825,19 @@ function renderEmployeeAuthGate() {
     </div>
   </div>`;
 }
+
 function renderEmployeeLoginForm() {
   return `
-    <h3><span class="num">01</span>Entrar com CPF</h3>
-    <label>CPF</label>
-    <input type="text" id="empLoginCPF" class="mono" placeholder="000.000.000-00" maxlength="14">
-    <div class="err" id="empLoginErr">CPF não encontrado.</div>
+    <h3><span class="num">01</span>Entrar</h3>
+    <label>CPF ou E-mail</label>
+    <input type="text" id="empLoginUser" placeholder="Digite seu CPF ou e-mail">
+    <label>Senha</label>
+    <input type="password" id="empLoginSenha" placeholder="••••••••">
+    <div class="err" id="empLoginErr">Dados incorretos.</div>
     <button class="btn btn-primary" id="empLoginBtn">Entrar</button>
   `;
 }
+
 function renderEmployeeRegisterForm() {
   return `
     <h3><span class="num">01</span>Meu cadastro</h3>
@@ -1852,6 +1847,10 @@ function renderEmployeeRegisterForm() {
     <input type="text" id="regCPF" class="mono" placeholder="000.000.000-00" maxlength="14">
     <label>E-mail</label>
     <input type="email" id="regEmail" placeholder="voce@email.com">
+    <label>Senha</label>
+    <input type="password" id="regSenha" placeholder="Mínimo 6 caracteres">
+    <label>Confirmar senha</label>
+    <input type="password" id="regSenha2" placeholder="Repita a senha">
     <label>Telefone</label>
     <input type="text" id="regTelefone" placeholder="(00) 00000-0000">
     <label>Cidade (Santa Catarina)</label>
@@ -1863,40 +1862,26 @@ function renderEmployeeRegisterForm() {
     <button class="btn btn-primary" id="registerBtn">Cadastrar e entrar</button>
   `;
 }
+
 function bindEmployeeAuthEvents() {
   document.querySelectorAll("[data-emp-auth-tab]").forEach(btn => {
     btn.addEventListener("click", () => { state.employeeAuthTab = btn.getAttribute("data-emp-auth-tab"); render(); });
   });
 
-  document.getElementById("empLoginCPF")?.addEventListener("input", function() {
-    this.value = maskCPF(this.value);
-  });
-  document.getElementById("empLoginBtn")?.addEventListener("click", () => {
-    const cpf = document.getElementById("empLoginCPF").value;
-    const errBox = document.getElementById("empLoginErr");
-    const emp = state.employees.find(e => e.cpf === cpf);
-    if (emp) {
-      state.session = { type: "funcionario", employeeId: emp.id };
-      state.selectedDay = null;
-      state.employeeActiveCompanyId = null;
-      scheduleSave(); render();
-      showToast(`👋 Bem-vindo(a), ${emp.nome}!`);
-      addLog('Login', emp.nome + ' (' + emp.cpf + ')');
-      addNotification('funcionario', emp.id, 'Bem-vindo de volta!');
-    } else {
-      errBox.style.display = "block";
-    }
-  });
-
+  // Máscara de CPF no cadastro
   document.getElementById("regCPF")?.addEventListener("input", function() {
     this.value = maskCPF(this.value);
   });
+
+  // Cadastro
   document.getElementById("registerBtn")?.addEventListener("click", () => {
     const nome = document.getElementById("regNome").value.trim();
     const cpf = document.getElementById("regCPF").value.trim();
     const email = document.getElementById("regEmail").value.trim();
     const telefone = document.getElementById("regTelefone").value.trim();
     const cidade = document.getElementById("regCidade").value;
+    const senha = document.getElementById("regSenha").value;
+    const senha2 = document.getElementById("regSenha2").value;
     const errBox = document.getElementById("regErr");
     const cpfDigits = cpf.replace(/\D/g, "");
 
@@ -1904,19 +1889,78 @@ function bindEmployeeAuthEvents() {
     if (!nome) msg = "Nome completo.";
     else if (!cidade) msg = "Selecione a cidade.";
     else if (cpfDigits.length !== 11) msg = "CPF precisa ter 11 dígitos.";
-    else if (!validarCPF(cpf)) msg = "CPF inválido.";
+    else if (!validarCPF(cpf)) msg = "CPF inválido (deve ter 11 dígitos)."; // nunca acontece se length=11
     else if (state.employees.some(e => e.cpf === cpf)) msg = "CPF já cadastrado.";
     else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) msg = "E-mail inválido.";
+    else if (senha.length < 6) msg = "Senha deve ter no mínimo 6 caracteres.";
+    else if (senha !== senha2) msg = "Senhas não coincidem.";
 
     if (msg) { errBox.textContent = msg; errBox.style.display = "block"; return; }
     errBox.style.display = "none";
-    const novo = { id: uid(), nome, cpf, cidade, email, telefone, status: 'ativo' };
+    const novo = { id: uid(), nome, cpf, cidade, email, telefone, status: 'ativo', senha };
     state.employees.push(novo);
     state.session = { type: "funcionario", employeeId: novo.id };
     state.selectedDay = null;
     scheduleSave(); render();
     showToast(`✅ Cadastro realizado, ${nome}!`);
     addLog('Cadastrou', nome);
+  });
+
+  // Login
+  document.getElementById("empLoginBtn")?.addEventListener("click", () => {
+    const userInput = document.getElementById("empLoginUser").value.trim();
+    const senha = document.getElementById("empLoginSenha").value;
+    const errBox = document.getElementById("empLoginErr");
+
+    // Determina se é CPF ou email
+    const isCpf = /^[\d.-]+$/.test(userInput); // apenas dígitos, ponto e traço
+    let found = null;
+
+    if (isCpf) {
+      // Validação relaxada: só exige 11 dígitos
+      if (!validarCPF(userInput)) {
+        errBox.textContent = "CPF deve ter 11 dígitos.";
+        errBox.style.display = "block";
+        return;
+      }
+      const cpfClean = userInput.replace(/\D/g, "");
+      found = state.employees.find(e => e.cpf.replace(/\D/g, "") === cpfClean);
+    } else {
+      // Trata como email
+      const email = userInput.toLowerCase();
+      found = state.employees.find(e => e.email && e.email.toLowerCase() === email);
+    }
+
+    if (!found) {
+      errBox.textContent = "Usuário não encontrado.";
+      errBox.style.display = "block";
+      return;
+    }
+
+    // Verifica senha
+    if (found.senha) {
+      if (found.senha !== senha) {
+        errBox.textContent = "Senha incorreta.";
+        errBox.style.display = "block";
+        return;
+      }
+    } else {
+      // Funcionário antigo sem senha: permite apenas se senha vazia
+      if (senha !== "") {
+        errBox.textContent = "Senha incorreta.";
+        errBox.style.display = "block";
+        return;
+      }
+    }
+
+    // Sucesso
+    state.session = { type: "funcionario", employeeId: found.id };
+    state.selectedDay = null;
+    state.employeeActiveCompanyId = null;
+    scheduleSave(); render();
+    showToast(`👋 Bem-vindo(a), ${found.nome}!`);
+    addLog('Login', found.nome + ' (' + found.cpf + ')');
+    addNotification('funcionario', found.id, 'Bem-vindo de volta!');
   });
 }
 
@@ -2413,4 +2457,3 @@ document.querySelectorAll('[data-mobile]').forEach(el => {
 </script>
 </body>
 </html>
-```
